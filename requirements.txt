@@ -1,3 +1,9 @@
+/*nst*/
+torch>=2.0.0
+torchvision>=0.15.0
+
+/*dataset*/
+
 anyio==4.11.0
 appnope==0.1.4
 argon2-cffi==25.1.0
