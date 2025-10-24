@@ -4,8 +4,8 @@ venv/
 #to be removed when data is completed pre-processed
 Data/original data
 Data/original data zip
-Data/dataset/animal images.zip
-Data/dataset/origami images
+Data/dataset/
+
 # Python cache
 __pycache__/
 *.pyc
