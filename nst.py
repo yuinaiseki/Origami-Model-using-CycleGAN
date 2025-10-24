@@ -4,6 +4,10 @@ from torchvision import transforms
 from PIL import Image
 import matplotlib.pyplot as plt
 
+
+# CONFIG
+IMG_SIZE = 512 # change to 256 for quick testing
+
 # load pre-trained model and get weights
 vgg = vgg19(pretrained=True).features
 
@@ -11,8 +15,10 @@ vgg = vgg19(pretrained=True).features
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # load image and preprocess it for VGG19
-def img_to_tensor(path, max_size=512):
+def img_to_tensor(path, max_size=IMG_SIZE):
     img = Image.open(path).convert("RGB")
+
+    # resize
     if max(img.size) > max_size:
         size = max_size
     else:
