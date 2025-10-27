@@ -4,6 +4,7 @@ from torchvision import transforms
 from PIL import Image
 import matplotlib.pyplot as plt
 import torch.optim as optim
+import time
 
 
 # CONFIG
@@ -127,6 +128,8 @@ def nst(content_path, style_path, output_path=None,
         alpha=LEARNING_RATE,
         config_name=ACTIVE_LAYER_CONFIG):
     
+    start_time = time.time()
+    
     # get config
     config = LAYER_CONFIGS[config_name]
     content_layers = config["content"]
@@ -158,6 +161,7 @@ def nst(content_path, style_path, output_path=None,
     optimizer = optim.Adam([result], lr=alpha)
 
     for step in range(num_steps):
+        step_start = time.time()
         result_features = extract_features(result, content_layers+style_layers, model=vgg)
 
         # content
@@ -188,13 +192,22 @@ def nst(content_path, style_path, output_path=None,
         optimizer.step()
 
         if step % 100 == 0:
+            step_end = time.time()
+            step_total = step_end - step_start
             print(f"step {step}/{num_steps}")
+            print(f"time taken for 100 steps: {step_total:.2f}")
+            
 
     result = tensor_to_img(result)
 
     if output_path:
         result.save(output_path)
         print(f"Saved result to {output_path}")
+
+    end_time = time.time()
+    total_time = end_time - start_time
+    
+    print(f"time taken: {total_time:.2f}")
     
     return result
 
