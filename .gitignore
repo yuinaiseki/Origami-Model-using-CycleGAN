@@ -5,6 +5,9 @@ venv/
 Data/original data
 Data/original data zip
 Data/dataset/
+CycleGAN/data/
+CycleGAN/__pycache__/
+CycleGAN/.ipynb_checkpoints/
 
 # Python cache
 __pycache__/
