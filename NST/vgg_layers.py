@@ -18,10 +18,22 @@ def explore_layers(content_path, style_path, output_dir='./layers'):
     return None
 
 if __name__ == "__main__":
-    content_path = 
-    style_path = 
+    obj_1 = "rose"
+    content_path_1 = "NST/test_imgs/rose.jpg"
+    style_path_1 = "NST/test_imgs/rose_o.jpg"
+    output_path = "./results"
+    num_steps = 3
 
-    explore_layers(content_path, style_path)
+    explore_layers(content_path_1, style_path_1)
+    nst_standalone(content_path_1, style_path_1, output_path, obj_1, num_steps)
+
+    """
+    obj_2 = "butterfly"
+    content_path_2 = "NST/test_imgs/butterfly.jpg"
+    style_path_2 = "NST/test_imgs/butterfly_o.jpg"
+
+    explore_layers(content_path_2, style_path_2)
+    nst_standalone(content_path_2, style_path_2, output_path, obj_2, num_steps)"""
 
 
 

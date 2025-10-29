@@ -134,15 +134,15 @@ def save_layer(layer_tensor, layer_path, max_channels=16):
     plt.savefig(layer_path, dpi=150, bbox_inches='tight')
     plt.close()
     
-def save_all_layers(img_tensor, result_dir, img_type, model=vgg):
-    os.makedirs(result_dir, exist_ok=True)
+def save_all_layers(img_tensor, img_type, output_dir, model=vgg):
+    os.makedirs(output_dir, exist_ok=True)
 
     # get list of all layers
     layers_list = list(LAYER_INDICES.keys())
     features = extract_features(img_tensor, layers_list)
 
     for layer in layers_list:
-        layer_path = os.path.join(result_dir, f"{img_type}_{layer}.png")
+        layer_path = os.path.join(output_dir, f"{img_type}_{layer}.png")
         save_layer(features[layer],layer_path)
     
     return None
@@ -158,12 +158,13 @@ def gram_matrix(img_tensor):
 
 
 # style transfer
-def nst(content_path, style_path, output_path=None,
+def nst(content_path, style_path, obj_name, output_path=None,
         num_steps=NUM_STEPS, 
         style_weight=STYLE_WEIGHT, 
         content_weight=CONTENT_WEIGHT,
         alpha=LEARNING_RATE,
-        config_name=ACTIVE_LAYER_CONFIG):
+        config_name=ACTIVE_LAYER_CONFIG,
+        output_dir=None,):
     
     start_time = time.time()
     
@@ -197,8 +198,33 @@ def nst(content_path, style_path, output_path=None,
     result = content_tensor.clone().requires_grad_(True).to(device)          # change to style_tensor for gatys faithulness?
     optimizer = optim.Adam([result], lr=alpha)
 
+    loss_history = {
+        'total': [],
+        'content': [],
+        'style': [],
+        'step': []
+    }
+
+    if output_dir:
+            log_file = os.path.join(output_dir, f'training_log_{obj_name}.txt')
+            with open(log_file, 'w') as f:
+                f.write(f"NST training log\n")
+                f.write(f"{'='*80}\n")
+                f.write(f"config: {config_name}\n")
+                f.write(f"content: {content_path}\n")
+                f.write(f"style: {style_path}\n")
+                f.write(f"total steps: {num_steps}\n")
+                f.write(f"content weight: {content_weight}\n")
+                f.write(f"style weight: {style_weight}\n")
+                f.write(f"learning rate: {alpha}\n")
+                f.write(f"{'='*80}\n\n")
+
+            print(f"started logging to: {log_file}")
+
+    start_time = time.time()
+    last_log_time = start_time
+
     for step in range(num_steps):
-        step_start = time.time()
         result_features = extract_features(result, content_layers+style_layers, model=vgg)
 
         # content
@@ -228,40 +254,102 @@ def nst(content_path, style_path, output_path=None,
         total_loss.backward()
         optimizer.step()
 
+        loss_history['total'].append(total_loss.item())
+        loss_history['content'].append(content_loss.item())
+        loss_history['style'].append(style_loss.item())
+        loss_history['step'].append(step)
+
         if step % 100 == 0:
-            step_end = time.time()
-            step_total = step_end - step_start
-            print(f"step {step}/{num_steps}")
-            print(f"time taken for 100 steps: {step_total:.2f}")
+            current_time = time.time()
+            cumulative_time = current_time - start_time
+            step_time = current_time - last_log_time
             
-
-    result = tensor_to_img(result)
-
-    if output_path:
-        result.save(output_path)
-        print(f"Saved result to {output_path}")
+            # consol
+            print(f"step {step:4d}/{num_steps} | "
+                f"total loss: {total_loss.item():10.2f} | "
+                f"content loss: {content_loss.item():8.4f} | "
+                f"style loss: {style_loss.item():10.6f} | "
+                f"time taken (cumulative): {cumulative_time:6.2f}s | " 
+                f"time taken (~100 steps): {step_time:6.2f}s")
+            
+            # Save image
+            if output_dir:
+                intm_img = tensor_to_img(result)
+                intm_path = os.path.join(output_dir, f'step_{step:04d}.png')
+                intm_img.save(intm_path)
+                
+                # Append to log file
+                with open(log_file, 'a') as f:
+                    f.write(f"{step:<8} {total_loss.item():<15.2f} "
+                        f"{content_loss.item():<15.4f} {style_loss.item():<15.6f} "
+                        f"{step_time:<12.2f}\n")
+                    
+            last_log_time = current_time
 
     end_time = time.time()
     total_time = end_time - start_time
-    
-    print(f"time taken: {total_time:.2f}")
-    
-    return result
 
-# for standalone testing
-if __name__ == "__main__":
+    final_img = tensor_to_img(result)
+    if output_dir:
+        final_path = os.path.join(output_dir, 'final.png')
+        final_img.save(final_path)
+        print(f"saved final result in {final_path}")
+        
+        # Append final summary to log
+        with open(log_file, 'a') as f:
+            f.write(f"\n{'='*80}\n")
+            f.write(f"FINAL RESULTS!!\n")
+            f.write(f"{'='*80}\n")
+            f.write(f"total time: {total_time:.2f}s ({total_time/60:.2f} minutes)\n")
+            f.write(f"avg time per step: {total_time/num_steps:.3f}s\n")
+            f.write(f"final total loss: {loss_history['total'][-1]:.2f}\n")
+            f.write(f"final content loss: {loss_history['content'][-1]:.4f}\n")
+            f.write(f"final style loss: {loss_history['style'][-1]:.6f}\n")
+        
+        print(f"training log saved in {log_file}")
+    
+    print(f"time taken us {total_time:.2f}")
+    
+    return final_img
 
-    content_path = "./test_imgs/cat.jpg"
-    style_path = "./test_imgs/rose.jpg"
+def nst_standalone(content_path, style_path, output_dir, obj_name, num_steps):
 
     org_img = Image.open(content_path)
 
     result = nst(
             content_path=content_path,
             style_path=style_path,
+            obj_name=obj_name,
+            num_steps=num_steps,     
+            output_path=None,              # more?
+            config_name="gatys",
+            output_dir=output_dir)
+    
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+    axes[0].imshow(org_img)
+    axes[1].imshow(result)
+
+    plt.tight_layout()
+    plt.show()
+
+# for standalone testing
+if __name__ == "__main__":
+
+    content_path = "./test_imgs/cat.jpg"
+    style_path = "./test_imgs/rose.jpg"
+    output_path = "./results/"
+    obj_name = "cat"
+
+    org_img = Image.open(content_path)
+
+    result = nst(
+            content_path=content_path,
+            style_path=style_path,
+            obj_name=obj_name,
             output_path=None,
             num_steps=2000,                   # more?
-            config_name="gatys"
+            config_name="gatys",
+            output_dir=output_path
         )
     
     fig, axes = plt.subplots(1, 2, figsize=(12, 6))
