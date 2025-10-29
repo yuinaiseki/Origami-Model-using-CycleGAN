@@ -206,8 +206,9 @@ def nst(content_path, style_path, obj_name, output_path=None,
     }
 
     if output_dir:
-            os.makedirs(output_dir, exist_ok=True)
-            log_file = os.path.join(output_dir, f'training_log_{obj_name}.txt')
+            final_output_dir = os.path.join(output_dir, f'{obj_name}')
+            os.makedirs(final_output_dir, exist_ok=True)
+            log_file = os.path.join(final_output_dir, f'training_log_{obj_name}.txt')
             with open(log_file, 'w') as f:
                 f.write(f"NST training log\n")
                 f.write(f"{'='*80}\n")
@@ -276,7 +277,7 @@ def nst(content_path, style_path, obj_name, output_path=None,
             # Save image
             if output_dir:
                 intm_img = tensor_to_img(result)
-                intm_path = os.path.join(output_dir, f'{obj_name}_step_{step:04d}.png')
+                intm_path = os.path.join(final_output_dir, f'{obj_name}_step_{step:04d}.png')
                 intm_img.save(intm_path)
                 
                 # Append to log file
@@ -292,7 +293,7 @@ def nst(content_path, style_path, obj_name, output_path=None,
 
     final_img = tensor_to_img(result)
     if output_dir:
-        final_path = os.path.join(output_dir, f'{obj_name}_final.png')
+        final_path = os.path.join(final_output_dir, f'{obj_name}_final.png')
         final_img.save(final_path)
         print(f"saved final result in {final_path}")
         
