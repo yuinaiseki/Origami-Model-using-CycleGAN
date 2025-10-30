@@ -5,12 +5,20 @@ venv/
 Data/original data
 Data/original data zip
 Data/dataset/
+
+#CycleGAN 
 CycleGAN/data/
 CycleGAN/__pycache__/
 CycleGAN/.ipynb_checkpoints/
 CycleGAN/results/
+
+#Vanilla NST
 NST/results
 NST/layers
+
+#Feed Forward NST
+NST/checkpoints_nststyle
+NST/samples_nststyle
 
 # Python cache
 __pycache__/
