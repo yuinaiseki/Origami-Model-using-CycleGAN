@@ -23,7 +23,7 @@ def residual_block(x, filters):
 # ===========================
 # Generator: ResNet-style (CycleGAN)
 # ===========================
-def build_generator(image_size=128, channels=3, n_blocks=6):
+def build_generator(image_size=256, channels=3, n_blocks=9):
     inputs = layers.Input(shape=(image_size, image_size, channels))
 
     # Downsampling
@@ -64,7 +64,7 @@ def build_generator(image_size=128, channels=3, n_blocks=6):
 # ===========================
 # Discriminator: PatchGAN
 # ===========================
-def build_discriminator(image_size=128, channels=3):
+def build_discriminator(image_size=256, channels=3):
     inputs = layers.Input(shape=(image_size, image_size, channels))
 
     x = layers.Conv2D(64, 4, strides=2, padding="same")(inputs)
