@@ -1,11 +1,32 @@
 import tensorflow as tf
 from tensorflow.keras import layers
-try:
-    import tensorflow_addons as tfa
-    NormLayer = tfa.layers.InstanceNormalization
-except ImportError:
-    # fallback to BatchNorm if addons not installed
-    NormLayer = layers.BatchNormalization
+
+class InstanceNorm(layers.Layer):
+    def __init__(self, epsilon=1e-5, **kwargs):
+        super().__init__(**kwargs)
+        self.epsilon = epsilon
+
+    def build(self, input_shape):
+        channels = input_shape[-1]
+        self.gamma = self.add_weight(
+            name="gamma",
+            shape=(channels,),
+            initializer="ones",
+            trainable=True,
+        )
+        self.beta = self.add_weight(
+            name="beta",
+            shape=(channels,),
+            initializer="zeros",
+            trainable=True,
+        )
+        super().build(input_shape)
+
+    def call(self, x):
+        mean, var = tf.nn.moments(x, axes=[1, 2], keepdims=True)
+        return self.gamma * ((x - mean) / tf.sqrt(var + self.epsilon)) + self.beta
+
+NormLayer = InstanceNorm
 
 
 # ===========================

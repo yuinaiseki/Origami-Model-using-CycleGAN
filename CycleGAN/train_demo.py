@@ -68,7 +68,7 @@ def train_step(real_x, real_y):
     return G_total_loss, D_X_loss, D_Y_loss
 
 # 4️⃣ 训练循环
-trainX = get_dataset('data/butterfly_real/*.jpeg', batch_size=2)
+trainX = get_dataset('data/butterfly_real/*.jpeg', batch_size=2, )
 trainY = get_dataset('data/butterfly_origami/*.jpg', batch_size=2)
 
 for epoch in range(3):  # 试跑3个epoch
