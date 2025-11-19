@@ -12,7 +12,10 @@ CycleGAN/data/
 CycleGAN/__pycache__/
 CycleGAN/.ipynb_checkpoints/
 CycleGAN/results/
-
+CycleGAN/experiments/*/results/*.png
+!CycleGAN/experiments/*/results/output_test.png
+CycleGAN/experiments/*/checkpoints/
+CycleGAN/experiments/*/exported/*savedmodel/
 #Vanilla NST
 NST/results
 NST/layers

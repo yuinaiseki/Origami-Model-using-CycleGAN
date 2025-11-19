@@ -1,0 +1,231 @@
+2025-11-19 02:20:30,156 - INFO - Experiment directory: experiments/run_20251119-022030
+2025-11-19 02:20:34,931 - INFO - Epoch 1/100
+2025-11-19 02:22:56,955 - INFO - Epoch 1 completed in 142.02s (2.7312s per step)
+2025-11-19 02:22:58,930 - INFO - Epoch 2/100
+2025-11-19 02:24:07,133 - INFO - Epoch 2 completed in 68.20s (1.3116s per step)
+2025-11-19 02:24:08,256 - INFO - Epoch 3/100
+2025-11-19 02:25:15,923 - INFO - Epoch 3 completed in 67.67s (1.3013s per step)
+2025-11-19 02:25:17,034 - INFO - Epoch 4/100
+2025-11-19 02:26:24,571 - INFO - Epoch 4 completed in 67.54s (1.2988s per step)
+2025-11-19 02:26:25,894 - INFO - Epoch 5/100
+2025-11-19 02:27:34,183 - INFO - Epoch 5 completed in 68.29s (1.3133s per step)
+2025-11-19 02:27:35,253 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-1
+2025-11-19 02:27:36,348 - INFO - Epoch 6/100
+2025-11-19 02:28:43,960 - INFO - Epoch 6 completed in 67.61s (1.3002s per step)
+2025-11-19 02:28:45,350 - INFO - Epoch 7/100
+2025-11-19 02:29:53,842 - INFO - Epoch 7 completed in 68.49s (1.3172s per step)
+2025-11-19 02:29:55,043 - INFO - Epoch 8/100
+2025-11-19 02:31:02,553 - INFO - Epoch 8 completed in 67.51s (1.2983s per step)
+2025-11-19 02:31:03,717 - INFO - Epoch 9/100
+2025-11-19 02:32:11,371 - INFO - Epoch 9 completed in 67.65s (1.3010s per step)
+2025-11-19 02:32:12,604 - INFO - Epoch 10/100
+2025-11-19 02:33:20,167 - INFO - Epoch 10 completed in 67.56s (1.2993s per step)
+2025-11-19 02:33:21,054 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-2
+2025-11-19 02:33:22,907 - INFO - Epoch 10: G=3.567 DX=0.282 DY=0.191
+2025-11-19 02:33:24,608 - INFO - Epoch 11/100
+2025-11-19 02:34:32,139 - INFO - Epoch 11 completed in 67.53s (1.2987s per step)
+2025-11-19 02:34:33,199 - INFO - Epoch 12/100
+2025-11-19 02:35:40,785 - INFO - Epoch 12 completed in 67.59s (1.2997s per step)
+2025-11-19 02:35:41,898 - INFO - Epoch 13/100
+2025-11-19 02:36:49,593 - INFO - Epoch 13 completed in 67.70s (1.3018s per step)
+2025-11-19 02:36:50,644 - INFO - Epoch 14/100
+2025-11-19 02:37:58,320 - INFO - Epoch 14 completed in 67.68s (1.3015s per step)
+2025-11-19 02:37:59,468 - INFO - Epoch 15/100
+2025-11-19 02:39:06,971 - INFO - Epoch 15 completed in 67.50s (1.2981s per step)
+2025-11-19 02:39:07,829 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-3
+2025-11-19 02:39:08,999 - INFO - Epoch 16/100
+2025-11-19 02:40:16,526 - INFO - Epoch 16 completed in 67.53s (1.2986s per step)
+2025-11-19 02:40:17,518 - INFO - Epoch 17/100
+2025-11-19 02:41:25,001 - INFO - Epoch 17 completed in 67.48s (1.2978s per step)
+2025-11-19 02:41:26,062 - INFO - Epoch 18/100
+2025-11-19 02:42:33,399 - INFO - Epoch 18 completed in 67.34s (1.2949s per step)
+2025-11-19 02:42:34,581 - INFO - Epoch 19/100
+2025-11-19 02:43:42,219 - INFO - Epoch 19 completed in 67.64s (1.3007s per step)
+2025-11-19 02:43:43,374 - INFO - Epoch 20/100
+2025-11-19 02:44:50,828 - INFO - Epoch 20 completed in 67.45s (1.2972s per step)
+2025-11-19 02:44:51,680 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-4
+2025-11-19 02:44:52,651 - INFO - Epoch 20: G=4.056 DX=0.245 DY=0.199
+2025-11-19 02:44:53,788 - INFO - Epoch 21/100
+2025-11-19 02:46:01,313 - INFO - Epoch 21 completed in 67.52s (1.2986s per step)
+2025-11-19 02:46:02,357 - INFO - Epoch 22/100
+2025-11-19 02:47:09,876 - INFO - Epoch 22 completed in 67.52s (1.2984s per step)
+2025-11-19 02:47:10,837 - INFO - Epoch 23/100
+2025-11-19 02:48:18,507 - INFO - Epoch 23 completed in 67.67s (1.3013s per step)
+2025-11-19 02:48:19,779 - INFO - Epoch 24/100
+2025-11-19 02:49:27,619 - INFO - Epoch 24 completed in 67.84s (1.3046s per step)
+2025-11-19 02:49:29,265 - INFO - Epoch 25/100
+2025-11-19 02:50:36,692 - INFO - Epoch 25 completed in 67.43s (1.2967s per step)
+2025-11-19 02:50:37,588 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-5
+2025-11-19 02:50:38,672 - INFO - Epoch 26/100
+2025-11-19 02:51:46,240 - INFO - Epoch 26 completed in 67.57s (1.2994s per step)
+2025-11-19 02:51:47,628 - INFO - Epoch 27/100
+2025-11-19 02:52:55,284 - INFO - Epoch 27 completed in 67.66s (1.3011s per step)
+2025-11-19 02:52:56,374 - INFO - Epoch 28/100
+2025-11-19 02:54:04,187 - INFO - Epoch 28 completed in 67.81s (1.3041s per step)
+2025-11-19 02:54:05,375 - INFO - Epoch 29/100
+2025-11-19 02:55:12,848 - INFO - Epoch 29 completed in 67.47s (1.2975s per step)
+2025-11-19 02:55:13,956 - INFO - Epoch 30/100
+2025-11-19 02:56:21,488 - INFO - Epoch 30 completed in 67.53s (1.2987s per step)
+2025-11-19 02:56:22,409 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-6
+2025-11-19 02:56:23,420 - INFO - Epoch 30: G=3.807 DX=0.141 DY=0.147
+2025-11-19 02:56:26,930 - INFO - Epoch 31/100
+2025-11-19 02:57:34,188 - INFO - Epoch 31 completed in 67.26s (1.2934s per step)
+2025-11-19 02:57:35,231 - INFO - Epoch 32/100
+2025-11-19 02:58:42,608 - INFO - Epoch 32 completed in 67.38s (1.2957s per step)
+2025-11-19 02:58:43,966 - INFO - Epoch 33/100
+2025-11-19 02:59:51,475 - INFO - Epoch 33 completed in 67.51s (1.2982s per step)
+2025-11-19 02:59:52,526 - INFO - Epoch 34/100
+2025-11-19 03:00:59,958 - INFO - Epoch 34 completed in 67.43s (1.2968s per step)
+2025-11-19 03:01:01,202 - INFO - Epoch 35/100
+2025-11-19 03:02:08,607 - INFO - Epoch 35 completed in 67.41s (1.2963s per step)
+2025-11-19 03:02:09,529 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-7
+2025-11-19 03:02:10,528 - INFO - Epoch 36/100
+2025-11-19 03:03:18,321 - INFO - Epoch 36 completed in 67.79s (1.3037s per step)
+2025-11-19 03:03:19,347 - INFO - Epoch 37/100
+2025-11-19 03:04:27,016 - INFO - Epoch 37 completed in 67.67s (1.3013s per step)
+2025-11-19 03:04:28,055 - INFO - Epoch 38/100
+2025-11-19 03:05:35,493 - INFO - Epoch 38 completed in 67.44s (1.2969s per step)
+2025-11-19 03:05:36,570 - INFO - Epoch 39/100
+2025-11-19 03:06:43,928 - INFO - Epoch 39 completed in 67.36s (1.2953s per step)
+2025-11-19 03:06:44,934 - INFO - Epoch 40/100
+2025-11-19 03:07:52,564 - INFO - Epoch 40 completed in 67.63s (1.3006s per step)
+2025-11-19 03:07:53,481 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-8
+2025-11-19 03:07:54,608 - INFO - Epoch 40: G=4.629 DX=0.194 DY=0.274
+2025-11-19 03:07:56,088 - INFO - Epoch 41/100
+2025-11-19 03:09:03,918 - INFO - Epoch 41 completed in 67.83s (1.3044s per step)
+2025-11-19 03:09:04,832 - INFO - Epoch 42/100
+2025-11-19 03:10:12,735 - INFO - Epoch 42 completed in 67.90s (1.3058s per step)
+2025-11-19 03:10:13,794 - INFO - Epoch 43/100
+2025-11-19 03:11:21,302 - INFO - Epoch 43 completed in 67.51s (1.2982s per step)
+2025-11-19 03:11:22,342 - INFO - Epoch 44/100
+2025-11-19 03:12:29,848 - INFO - Epoch 44 completed in 67.51s (1.2982s per step)
+2025-11-19 03:12:30,850 - INFO - Epoch 45/100
+2025-11-19 03:13:38,176 - INFO - Epoch 45 completed in 67.33s (1.2947s per step)
+2025-11-19 03:13:39,643 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-9
+2025-11-19 03:13:40,789 - INFO - Epoch 46/100
+2025-11-19 03:14:48,242 - INFO - Epoch 46 completed in 67.45s (1.2972s per step)
+2025-11-19 03:14:49,959 - INFO - Epoch 47/100
+2025-11-19 03:15:57,220 - INFO - Epoch 47 completed in 67.26s (1.2935s per step)
+2025-11-19 03:15:58,335 - INFO - Epoch 48/100
+2025-11-19 03:17:05,699 - INFO - Epoch 48 completed in 67.36s (1.2955s per step)
+2025-11-19 03:17:06,703 - INFO - Epoch 49/100
+2025-11-19 03:18:14,112 - INFO - Epoch 49 completed in 67.41s (1.2963s per step)
+2025-11-19 03:18:15,056 - INFO - Epoch 50/100
+2025-11-19 03:19:22,619 - INFO - Epoch 50 completed in 67.56s (1.2993s per step)
+2025-11-19 03:19:23,517 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-10
+2025-11-19 03:19:24,641 - INFO - Epoch 50: G=4.786 DX=0.253 DY=0.188
+2025-11-19 03:19:25,896 - INFO - Epoch 51/100
+2025-11-19 03:20:33,187 - INFO - Epoch 51 completed in 67.29s (1.2941s per step)
+2025-11-19 03:20:34,316 - INFO - Epoch 52/100
+2025-11-19 03:21:42,779 - INFO - Epoch 52 completed in 68.46s (1.3166s per step)
+2025-11-19 03:21:43,711 - INFO - Epoch 53/100
+2025-11-19 03:22:51,125 - INFO - Epoch 53 completed in 67.41s (1.2964s per step)
+2025-11-19 03:22:52,132 - INFO - Epoch 54/100
+2025-11-19 03:23:59,486 - INFO - Epoch 54 completed in 67.35s (1.2953s per step)
+2025-11-19 03:24:00,475 - INFO - Epoch 55/100
+2025-11-19 03:25:08,994 - INFO - Epoch 55 completed in 68.52s (1.3177s per step)
+2025-11-19 03:25:09,884 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-11
+2025-11-19 03:25:10,795 - INFO - Epoch 56/100
+2025-11-19 03:26:18,161 - INFO - Epoch 56 completed in 67.37s (1.2955s per step)
+2025-11-19 03:26:19,278 - INFO - Epoch 57/100
+2025-11-19 03:27:26,707 - INFO - Epoch 57 completed in 67.43s (1.2967s per step)
+2025-11-19 03:27:27,845 - INFO - Epoch 58/100
+2025-11-19 03:28:37,455 - INFO - Epoch 58 completed in 69.61s (1.3387s per step)
+2025-11-19 03:28:38,480 - INFO - Epoch 59/100
+2025-11-19 03:29:46,103 - INFO - Epoch 59 completed in 67.62s (1.3004s per step)
+2025-11-19 03:29:47,450 - INFO - Epoch 60/100
+2025-11-19 03:30:55,841 - INFO - Epoch 60 completed in 68.39s (1.3152s per step)
+2025-11-19 03:30:56,762 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-12
+2025-11-19 03:30:57,759 - INFO - Epoch 60: G=5.054 DX=0.092 DY=0.293
+2025-11-19 03:30:59,118 - INFO - Epoch 61/100
+2025-11-19 03:32:06,435 - INFO - Epoch 61 completed in 67.32s (1.2946s per step)
+2025-11-19 03:32:07,625 - INFO - Epoch 62/100
+2025-11-19 03:33:15,464 - INFO - Epoch 62 completed in 67.84s (1.3046s per step)
+2025-11-19 03:33:16,425 - INFO - Epoch 63/100
+2025-11-19 03:34:23,957 - INFO - Epoch 63 completed in 67.53s (1.2987s per step)
+2025-11-19 03:34:25,021 - INFO - Epoch 64/100
+2025-11-19 03:35:32,512 - INFO - Epoch 64 completed in 67.49s (1.2979s per step)
+2025-11-19 03:35:33,517 - INFO - Epoch 65/100
+2025-11-19 03:36:40,905 - INFO - Epoch 65 completed in 67.39s (1.2959s per step)
+2025-11-19 03:36:41,805 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-13
+2025-11-19 03:36:42,790 - INFO - Epoch 66/100
+2025-11-19 03:37:50,562 - INFO - Epoch 66 completed in 67.77s (1.3033s per step)
+2025-11-19 03:37:51,586 - INFO - Epoch 67/100
+2025-11-19 03:38:59,157 - INFO - Epoch 67 completed in 67.57s (1.2994s per step)
+2025-11-19 03:39:00,118 - INFO - Epoch 68/100
+2025-11-19 03:40:07,590 - INFO - Epoch 68 completed in 67.47s (1.2975s per step)
+2025-11-19 03:40:08,713 - INFO - Epoch 69/100
+2025-11-19 03:41:18,141 - INFO - Epoch 69 completed in 69.43s (1.3352s per step)
+2025-11-19 03:41:19,140 - INFO - Epoch 70/100
+2025-11-19 03:42:26,468 - INFO - Epoch 70 completed in 67.33s (1.2948s per step)
+2025-11-19 03:42:27,373 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-14
+2025-11-19 03:42:28,500 - INFO - Epoch 70: G=4.035 DX=0.216 DY=0.071
+2025-11-19 03:42:29,747 - INFO - Epoch 71/100
+2025-11-19 03:43:37,820 - INFO - Epoch 71 completed in 68.07s (1.3091s per step)
+2025-11-19 03:43:38,910 - INFO - Epoch 72/100
+2025-11-19 03:44:46,381 - INFO - Epoch 72 completed in 67.47s (1.2975s per step)
+2025-11-19 03:44:47,867 - INFO - Epoch 73/100
+2025-11-19 03:45:55,287 - INFO - Epoch 73 completed in 67.42s (1.2965s per step)
+2025-11-19 03:45:56,295 - INFO - Epoch 74/100
+2025-11-19 03:47:03,965 - INFO - Epoch 74 completed in 67.67s (1.3013s per step)
+2025-11-19 03:47:04,978 - INFO - Epoch 75/100
+2025-11-19 03:48:12,749 - INFO - Epoch 75 completed in 67.77s (1.3033s per step)
+2025-11-19 03:48:13,669 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-15
+2025-11-19 03:48:14,670 - INFO - Epoch 76/100
+2025-11-19 03:49:22,019 - INFO - Epoch 76 completed in 67.35s (1.2952s per step)
+2025-11-19 03:49:23,057 - INFO - Epoch 77/100
+2025-11-19 03:50:30,606 - INFO - Epoch 77 completed in 67.55s (1.2990s per step)
+2025-11-19 03:50:31,555 - INFO - Epoch 78/100
+2025-11-19 03:51:39,226 - INFO - Epoch 78 completed in 67.67s (1.3014s per step)
+2025-11-19 03:51:40,168 - INFO - Epoch 79/100
+2025-11-19 03:52:47,741 - INFO - Epoch 79 completed in 67.57s (1.2995s per step)
+2025-11-19 03:52:48,789 - INFO - Epoch 80/100
+2025-11-19 03:53:56,596 - INFO - Epoch 80 completed in 67.81s (1.3040s per step)
+2025-11-19 03:53:57,524 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-16
+2025-11-19 03:53:58,490 - INFO - Epoch 80: G=4.648 DX=0.183 DY=0.097
+2025-11-19 03:53:59,945 - INFO - Epoch 81/100
+2025-11-19 03:55:07,584 - INFO - Epoch 81 completed in 67.64s (1.3008s per step)
+2025-11-19 03:55:08,612 - INFO - Epoch 82/100
+2025-11-19 03:56:16,222 - INFO - Epoch 82 completed in 67.61s (1.3002s per step)
+2025-11-19 03:56:17,214 - INFO - Epoch 83/100
+2025-11-19 03:57:24,739 - INFO - Epoch 83 completed in 67.52s (1.2986s per step)
+2025-11-19 03:57:25,784 - INFO - Epoch 84/100
+2025-11-19 03:58:33,156 - INFO - Epoch 84 completed in 67.37s (1.2956s per step)
+2025-11-19 03:58:34,817 - INFO - Epoch 85/100
+2025-11-19 03:59:42,686 - INFO - Epoch 85 completed in 67.87s (1.3052s per step)
+2025-11-19 03:59:43,650 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-17
+2025-11-19 03:59:44,864 - INFO - Epoch 86/100
+2025-11-19 04:00:52,449 - INFO - Epoch 86 completed in 67.59s (1.2997s per step)
+2025-11-19 04:00:53,677 - INFO - Epoch 87/100
+2025-11-19 04:02:01,041 - INFO - Epoch 87 completed in 67.36s (1.2955s per step)
+2025-11-19 04:02:02,012 - INFO - Epoch 88/100
+2025-11-19 04:03:09,953 - INFO - Epoch 88 completed in 67.94s (1.3066s per step)
+2025-11-19 04:03:11,021 - INFO - Epoch 89/100
+2025-11-19 04:04:18,760 - INFO - Epoch 89 completed in 67.74s (1.3027s per step)
+2025-11-19 04:04:20,037 - INFO - Epoch 90/100
+2025-11-19 04:05:27,559 - INFO - Epoch 90 completed in 67.52s (1.2985s per step)
+2025-11-19 04:05:28,487 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-18
+2025-11-19 04:05:29,552 - INFO - Epoch 90: G=3.819 DX=0.104 DY=0.111
+2025-11-19 04:05:30,734 - INFO - Epoch 91/100
+2025-11-19 04:06:38,222 - INFO - Epoch 91 completed in 67.49s (1.2978s per step)
+2025-11-19 04:06:39,205 - INFO - Epoch 92/100
+2025-11-19 04:07:46,827 - INFO - Epoch 92 completed in 67.62s (1.3004s per step)
+2025-11-19 04:07:47,849 - INFO - Epoch 93/100
+2025-11-19 04:08:55,224 - INFO - Epoch 93 completed in 67.37s (1.2957s per step)
+2025-11-19 04:08:56,211 - INFO - Epoch 94/100
+2025-11-19 04:10:03,609 - INFO - Epoch 94 completed in 67.40s (1.2961s per step)
+2025-11-19 04:10:04,594 - INFO - Epoch 95/100
+2025-11-19 04:11:12,172 - INFO - Epoch 95 completed in 67.58s (1.2996s per step)
+2025-11-19 04:11:13,103 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-19
+2025-11-19 04:11:20,687 - INFO - Epoch 96/100
+2025-11-19 04:12:31,101 - INFO - Epoch 96 completed in 70.41s (1.3541s per step)
+2025-11-19 04:12:32,487 - INFO - Epoch 97/100
+2025-11-19 04:13:39,825 - INFO - Epoch 97 completed in 67.34s (1.2950s per step)
+2025-11-19 04:13:41,088 - INFO - Epoch 98/100
+2025-11-19 04:14:48,688 - INFO - Epoch 98 completed in 67.60s (1.3000s per step)
+2025-11-19 04:14:49,743 - INFO - Epoch 99/100
+2025-11-19 04:15:57,238 - INFO - Epoch 99 completed in 67.49s (1.2980s per step)
+2025-11-19 04:15:58,570 - INFO - Epoch 100/100
+2025-11-19 04:17:06,059 - INFO - Epoch 100 completed in 67.49s (1.2979s per step)
+2025-11-19 04:17:06,968 - INFO - Saved checkpoint: experiments/run_20251119-022030/checkpoints/ckpt-20
+2025-11-19 04:17:08,123 - INFO - Epoch 100: G=3.629 DX=0.287 DY=0.102
