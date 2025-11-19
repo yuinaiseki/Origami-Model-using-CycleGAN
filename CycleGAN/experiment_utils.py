@@ -7,6 +7,8 @@ import logging
 
 import tensorflow as tf
 
+import sys
+
 
 class ExperimentRun:
 
@@ -27,10 +29,10 @@ class ExperimentRun:
         self.train_log_path = self.run_dir / "train.log"
         self.losses_path = self.run_dir / "losses.csv" #loss values epoch, step
         self.ckpt_dir = self.run_dir / "checkpoints" #model and checkpoint per epoch
-        self.samples_dir = self.run_dir / "results"
+        self.results_dir = self.run_dir / "results"
         
         self.ckpt_dir.mkdir(exist_ok=True)
-        self.samples_dir.mkdir(exist_ok=True)
+        self.results_dir.mkdir(exist_ok=True)
 
         with open(self.params_path, "w") as f:
             json.dump(params, f, indent=2, default=str)
@@ -72,7 +74,7 @@ class ExperimentRun:
         self.ckpt_manager = tf.train.CheckpointManager(
             self.ckpt,
             directory=str(self.ckpt_dir),
-            max_to_keep=None  
+            max_to_keep=5  
         )
         return self.ckpt, self.ckpt_manager
 
@@ -97,3 +99,10 @@ class ExperimentRun:
             if not file_exists:
                 writer.writeheader()
             writer.writerow(row)
+            
+     #progres bar       
+    def progress_bar(self, step, total_steps, bar_len=30):
+        filled = int(bar_len * (step / total_steps))
+        bar = "=" * filled + "." * (bar_len - filled)
+        percent = (step / total_steps) * 100
+        return f"[{bar}] {percent:5.1f}%"
