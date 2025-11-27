@@ -19,6 +19,12 @@ See training and test tips at: https://github.com/junyanz/pytorch-CycleGAN-and-p
 See frequently asked questions at: https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/blob/master/docs/qa.md
 """
 
+"""
+For origami cyclegan:
+    python train.py --dataroot ../../shared/data/train --name butterflytest --model cycle_gan --dataset_mode unaligned
+
+"""
+
 import time
 from options.train_options import TrainOptions
 from data import create_dataset
