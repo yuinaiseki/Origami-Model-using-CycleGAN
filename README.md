@@ -4,10 +4,7 @@ The structure of the repository is the following:
 ```
 README.md
 CycleGAN/
-    vision/
-        README.md
-    nlp/
-        README.md
+    TODO
 Data/
     data_augmentation.py
     data_curation.ipynb
@@ -23,4 +20,8 @@ NST/
     VanillaNST/
       nst.py
       vgg_layers.py
+.gitignore
+LICENSE
+README.md
+requirements.txt
 ```
