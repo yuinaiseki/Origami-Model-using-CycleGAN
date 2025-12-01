@@ -1,3 +1,5 @@
+""" Vanilla NST implementation """
+
 import torch
 from torchvision.models import vgg19
 from torchvision import transforms
@@ -9,7 +11,7 @@ import os
 
 
 # CONFIG
-IMG_SIZE = 512 # change to 256 for quick testing
+IMG_SIZE = 512                  # change to 256 for quick testing
 LEARNING_RATE = 0.003
 CONTENT_WEIGHT = 1
 STYLE_WEIGHT = 1e6
@@ -34,6 +36,18 @@ LAYER_INDICES = {
     'conv5_4': '34'
 }
 
+"""
+Different configurations we tried, with details/rationale for each one:
+    gatys: Baseline - proven to work well, balanced across scales
+    geometric_emphasis: Focus on mid-level layers (conv2-4) that capture geometric patterns and edges - ideal for origami's angular structures
+    edge_heavy: Only early layers with high weights - maximizes sharp fold detection
+    planar_surfaces: Mid-to-deep layers that capture flat regions - paper is planar
+    equal_weights: Removes bias - lets all scales contribute equally
+    high_detail_content: Earlier content layer preserves more detail - might keep animal features clearer
+    minimal_fast: Quick baseline with fewer layers - good for testing
+    texture_focused: Multiple early layers for paper texture
+"""
+
 LAYER_CONFIGS = {
     'gatys': {
         'content': ['conv4_2'],
@@ -45,20 +59,97 @@ LAYER_CONFIGS = {
             'conv4_1': 0.3,
             'conv5_1': 0.1
         },
+        'description': 'Original Gatys - balanced multi-scale style transfer'
+    },
+        
+    'geometric_emphasis': {
+        'content': ['conv4_2'],
+        'style': ['conv2_1', 'conv3_1', 'conv4_1'],  # Skip very fine and very coarse
+        'style_weights': {
+            'conv2_1': 1.5,  # Emphasize edges and angles
+            'conv3_1': 1.5,  # Emphasize geometric patterns
+            'conv4_1': 1.0   # Larger geometric structures
+        },
+        'description': 'Mid-level emphasis - strong geometric patterns and edges for origami'
+    },
+    
+    'edge_heavy': {
+        'content': ['conv4_2'],
+        'style': ['conv1_1', 'conv2_1'],  # Only early layers
+        'style_weights': {
+            'conv1_1': 2.0,  # Very strong edge emphasis
+            'conv2_1': 1.5   # Strong local patterns
+        },
+        'description': 'Early layers only - sharp folds and crisp edges'
+    },
+    
+    'planar_surfaces': {
+        'content': ['conv4_2'],
+        'style': ['conv3_1', 'conv4_1'],  # Mid-to-deep layers
+        'style_weights': {
+            'conv3_1': 1.5,  # Flat surface patterns
+            'conv4_1': 1.5   # Large planar regions
+        },
+        'description': 'Mid-deep layers - flat paper-like surfaces'
+    },
+    
+    'equal_weights': {
+        'content': ['conv4_2'],
+        'style': ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1'],
+        'style_weights': {
+            'conv1_1': 1.0,
+            'conv2_1': 1.0,
+            'conv3_1': 1.0,
+            'conv4_1': 1.0,
+            'conv5_1': 1.0
+        },
+        'description': 'Equal weights - no bias toward any scale'
+    },
+    
+    'high_detail_content': {
+        'content': ['conv3_1'],  # Earlier layer = more detail??
+        'style': ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1'],
+        'style_weights': {
+            'conv1_1': 1.0,
+            'conv2_1': 1.0,
+            'conv3_1': 0.8,
+            'conv4_1': 0.5
+        },
+        'description': 'Earlier content layer - preserves more fine details'
+    },
+    
+    'minimal_fast': {
+        'content': ['conv4_2'],
+        'style': ['conv2_1', 'conv3_1'],  # Only 2 layers
+        'style_weights': {
+            'conv2_1': 1.0,
+            'conv3_1': 1.0
+        },
+        'description': 'Minimal layers - faster computation, test baseline'
+    },
+    
+    'texture_focused': {
+        'content': ['conv4_2'],
+        'style': ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2'],  # Early layers + alternate conv
+        'style_weights': {
+            'conv1_1': 1.2,
+            'conv1_2': 1.0,
+            'conv2_1': 1.2,
+            'conv2_2': 1.0
+        },
+        'description': 'Multiple early layers - paper texture emphasis'
     }
 }
 
-# select active layer config to change layers for feature extraction
+
 ACTIVE_LAYER_CONFIG = "gatys" 
-
-# load pre-trained model and get weights
 vgg = vgg19(pretrained=True).features
-
-# cpu or gpu?
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# load image and preprocess it for VGG19
+
 def img_to_tensor(path, max_size=IMG_SIZE):
+    """load image and preprocess it for VGG19"""
+
     img = Image.open(path).convert("RGB")
 
     # resize
@@ -78,9 +169,8 @@ def img_to_tensor(path, max_size=IMG_SIZE):
     processed_img = transform(img).unsqueeze(0)
     return processed_img.to(device)
 
-
-# convert image back to viewable from optimized tensor
 def tensor_to_img(tensor):
+    """convert image back to viewable from optimized tensor"""
     # get img, get rid of gradients
     img = tensor.cpu().clone().detach()
     img = img.squeeze(0)
@@ -91,9 +181,9 @@ def tensor_to_img(tensor):
     img = transforms.ToPILImage()(img)
     return img
 
-# feature extration 
 
 def extract_features(img_tensor, layers, model=vgg):
+    """feature extraction"""
 
     x = img_tensor
 
@@ -112,7 +202,8 @@ def extract_features(img_tensor, layers, model=vgg):
     return features
 
 def save_layer(layer_tensor, layer_path, max_channels=16):
-    # normalize output
+    """helper function to save one layer as a figure"""
+
     features = layer_tensor.squeeze(0).cpu().detach()
     num_channels = min(features.shape[0], max_channels)
 
@@ -135,6 +226,8 @@ def save_layer(layer_tensor, layer_path, max_channels=16):
     plt.close()
     
 def save_all_layers(img_tensor, img_type, obj_name, output_dir, model=vgg):
+    """saving all the layers"""
+
     os.makedirs(output_dir, exist_ok=True)
 
     # get list of all layers
@@ -147,17 +240,14 @@ def save_all_layers(img_tensor, img_type, obj_name, output_dir, model=vgg):
     
     return None
 
-# gram matrix to capture style
 def gram_matrix(img_tensor):
+    """gram matrix to capture style"""
     batch, channels, height, width = img_tensor.size()
     # flatten
     img_tensor = img_tensor.view(channels, height * width)
     gram = torch.mm(img_tensor, img_tensor.t())
     return gram
 
-
-
-# style transfer
 def nst(content_path, style_path, obj_name, output_path=None,
         num_steps=NUM_STEPS, 
         style_weight=STYLE_WEIGHT, 
@@ -165,6 +255,7 @@ def nst(content_path, style_path, obj_name, output_path=None,
         alpha=LEARNING_RATE,
         config_name=ACTIVE_LAYER_CONFIG,
         output_dir=None,):
+    """core NST implementation: logs numbers (e.g. loss, avg time taken) each step + image results in specified dir"""
     
     start_time = time.time()
     
@@ -191,7 +282,7 @@ def nst(content_path, style_path, obj_name, output_path=None,
     style_features = extract_features(style_tensor, style_layers, model=vgg)
 
     print("calculating grams")
-    # calculate gram for layers in style image
+    # calculate gram
     style_grams = {layer: gram_matrix(style_features[layer]) 
                    for layer in style_layers}
     
@@ -314,25 +405,116 @@ def nst(content_path, style_path, obj_name, output_path=None,
     
     return final_img
 
-def nst_standalone(content_path, style_path, output_dir, obj_name, num_steps):
-
-    org_img = Image.open(content_path)
-
-    result = nst(
+def compare_configs(content_path, style_path, obj_name, output_dir, 
+                   configs_to_test=None, num_steps=2000):
+    """tests all (or specified) configurations of NST, logs and saves results"""
+    
+    # If no configs specified, test all
+    if configs_to_test is None:
+        configs_to_test = list(LAYER_CONFIGS.keys())
+    
+    print(f"# CONFIGURATION COMPARISON: {obj_name}")
+    print(f"Configs: {configs_to_test}")
+    print(f"# steps: {num_steps}")
+    
+    results = {}
+    
+    # Create comparison directory
+    comparison_dir = os.path.join(output_dir, f'{obj_name}_config_comparison')
+    os.makedirs(comparison_dir, exist_ok=True)
+    
+    # Run each configuration
+    for config_name in configs_to_test:
+        print(f"Testing Configuration: {config_name}")
+        print(f"Description: {LAYER_CONFIGS[config_name].get('description', 'No description')}")
+        
+        # Create subdirectory for this config
+        config_output_dir = os.path.join(comparison_dir, config_name)
+        
+        start_time = time.time()
+        
+        # Run NST
+        final_img = nst(
             content_path=content_path,
             style_path=style_path,
-            obj_name=obj_name,
-            num_steps=num_steps,     
-            output_path=None,              # more?
-            config_name="gatys",
-            output_dir=output_dir)
+            obj_name=f"{obj_name}_{config_name}",
+            num_steps=num_steps,
+            config_name=config_name,
+            output_dir=config_output_dir
+        )
+        
+        elapsed_time = time.time() - start_time
+        
+        # Store results
+        results[config_name] = {
+            'image': final_img,
+            'time': elapsed_time,
+            'output_dir': config_output_dir
+        }
+        
+        print(f"\n✓ {config_name} complete! Time: {elapsed_time:.2f}s\n")
     
-    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
-    axes[0].imshow(org_img)
-    axes[1].imshow(result)
-
+    # Create comparison grids    
+    num_configs = len(results)
+    cols = 3  # 3 configs per row
+    rows = (num_configs + cols - 1) // cols  # Ceiling div
+    
+    fig, axes = plt.subplots(rows, cols, figsize=(6*cols, 6*rows))
+    axes = axes.flatten() if num_configs > 1 else [axes]
+    
+    for idx, (config_name, data) in enumerate(results.items()):
+        axes[idx].imshow(data['image'])
+        axes[idx].set_title(
+            f"{config_name}\n{data['time']:.1f}s", 
+            fontsize=10, 
+            fontweight='bold'
+        )
+        axes[idx].axis('off')
+    
+    # Hide unused subplots
+    for idx in range(num_configs, len(axes)):
+        axes[idx].axis('off')
+    
     plt.tight_layout()
-    plt.show()
+    comparison_grid_path = os.path.join(comparison_dir, f'{obj_name}_all_configs.png')
+    plt.savefig(comparison_grid_path, dpi=150, bbox_inches='tight')
+    plt.close()
+    
+    print(f"✓ Comparison grid saved: {comparison_grid_path}")
+    
+    # Create summary report
+    summary_path = os.path.join(comparison_dir, f'{obj_name}_comparison_summary.txt')
+    with open(summary_path, 'w') as f:
+        f.write(f"Configuration Comparison Summary\n")
+        f.write(f"{'='*80}\n\n")
+        f.write(f"Object: {obj_name}\n")
+        f.write(f"Content: {content_path}\n")
+        f.write(f"Style: {style_path}\n")
+        f.write(f"Steps: {num_steps}\n\n")
+        f.write(f"{'='*80}\n")
+        f.write(f"Results:\n")
+        f.write(f"{'='*80}\n\n")
+        
+        for config_name, data in results.items():
+            config = LAYER_CONFIGS[config_name]
+            f.write(f"Configuration: {config_name}\n")
+            f.write(f"Description: {config.get('description', 'N/A')}\n")
+            f.write(f"Time: {data['time']:.2f}s ({data['time']/60:.2f} min)\n")
+            f.write(f"Content layers: {config['content']}\n")
+            f.write(f"Style layers: {config['style']}\n")
+            f.write(f"Style weights: {config['style_weights']}\n")
+            f.write(f"Output: {data['output_dir']}\n")
+            f.write(f"\n{'-'*80}\n\n")
+    
+    print(f"Summary saved to: {summary_path}")
+    
+    print(f"\n{'#'*80}")
+    print(f"# ALL CONFIGURATIONS COMPLETE!")
+    print(f"{'#'*80}")
+    print(f"Results saved in: {comparison_dir}/")
+    print(f"{'#'*80}\n")
+    
+    return results
 
 # for standalone testing
 if __name__ == "__main__":
@@ -360,20 +542,3 @@ if __name__ == "__main__":
 
     plt.tight_layout()
     plt.show()
-
-
-    """
-    img_url = "./test_imgs/cat.jpg"
-
-    org_img = Image.open(img_url)
-
-    processed_img = img_to_tensor(img_url)
-    converted_img = tensor_to_img(processed_img)
-    print(converted_img.size)
-
-    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
-    axes[0].imshow(org_img)
-    axes[1].imshow(converted_img)
-
-    plt.tight_layout()
-    plt.show()"""
