@@ -2,7 +2,6 @@
 
 The structure of the repository is the following:
 ```
-README.md
 CycleGAN/
     TODO
 Data/
