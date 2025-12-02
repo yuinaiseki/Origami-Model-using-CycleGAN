@@ -6,6 +6,7 @@ Data/original data
 Data/original data zip
 Data/dataset/
 Data/origami_images
+Data/yolov8x-seg.pt
 
 #CycleGAN 
 CycleGAN/data/

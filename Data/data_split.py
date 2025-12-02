@@ -5,7 +5,7 @@ from pathlib import Path
 
 IMG_EXTS = (".jpg", ".jpeg", ".png", ".bmp")
 
-MOUNT_ROOT = Path("../../data")
+MOUNT_ROOT = Path("dataset/clean")
 ANIMALS_ROOT = MOUNT_ROOT / "animals_balanced"
 ORIGAMI_ROOT = MOUNT_ROOT / "origami_images"
 SPLIT_ROOT = MOUNT_ROOT / "split"

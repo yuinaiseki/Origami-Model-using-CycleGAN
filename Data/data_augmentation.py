@@ -1,7 +1,7 @@
 import tensorflow as tf
 from pathlib import Path
 
-MOUNT_ROOT = Path("../../data")
+MOUNT_ROOT = Path("dataset/clean")
 TRAIN_ORIGAMI = MOUNT_ROOT / "split" / "origami" / "train"
 
 IMG_SIZE = 1024
