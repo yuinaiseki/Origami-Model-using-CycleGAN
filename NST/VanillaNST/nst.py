@@ -1,3 +1,4 @@
+
 """ Vanilla NST implementation """
 
 # ------------------------------------------------------------
@@ -46,18 +47,6 @@ LAYER_INDICES = {
 # ------------------------------------------------------------
 # 3. CONFIGS
 # ------------------------------------------------------------
-"""
-Different configurations we tried, with details/rationale for each one:
-    gatys: Baseline - proven to work well, balanced across scales
-    geometric_emphasis: Focus on mid-level layers (conv2-4) that capture geometric patterns and edges - ideal for origami's angular structures
-    edge_heavy: Only early layers with high weights - maximizes sharp fold detection
-    planar_surfaces: Mid-to-deep layers that capture flat regions - paper is planar
-    equal_weights: Removes bias - lets all scales contribute equally
-    high_detail_content: Earlier content layer preserves more detail - might keep animal features clearer
-    minimal_fast: Quick baseline with fewer layers - good for testing
-    texture_focused: Multiple early layers for paper texture
-"""
-
 LAYER_CONFIGS = {
     'gatys': {
         'content': ['conv4_2'],
@@ -74,31 +63,31 @@ LAYER_CONFIGS = {
         
     'geometric_emphasis': {
         'content': ['conv4_2'],
-        'style': ['conv2_1', 'conv3_1', 'conv4_1'],  # Skip very fine and very coarse
+        'style': ['conv2_1', 'conv3_1', 'conv4_1'],
         'style_weights': {
-            'conv2_1': 1.5,  # Emphasize edges and angles
-            'conv3_1': 1.5,  # Emphasize geometric patterns
-            'conv4_1': 1.0   # Larger geometric structures
+            'conv2_1': 1.5,
+            'conv3_1': 1.5,
+            'conv4_1': 1.0
         },
         'description': 'Mid-level emphasis - strong geometric patterns and edges for origami'
     },
     
     'edge_heavy': {
         'content': ['conv4_2'],
-        'style': ['conv1_1', 'conv2_1'],  # Only early layers
+        'style': ['conv1_1', 'conv2_1'],
         'style_weights': {
-            'conv1_1': 2.0,  # Very strong edge emphasis
-            'conv2_1': 1.5   # Strong local patterns
+            'conv1_1': 2.0,
+            'conv2_1': 1.5
         },
         'description': 'Early layers only - sharp folds and crisp edges'
     },
     
     'planar_surfaces': {
         'content': ['conv4_2'],
-        'style': ['conv3_1', 'conv4_1'],  # Mid-to-deep layers
+        'style': ['conv3_1', 'conv4_1'],
         'style_weights': {
-            'conv3_1': 1.5,  # Flat surface patterns
-            'conv4_1': 1.5   # Large planar regions
+            'conv3_1': 1.5,
+            'conv4_1': 1.5
         },
         'description': 'Mid-deep layers - flat paper-like surfaces'
     },
@@ -117,7 +106,7 @@ LAYER_CONFIGS = {
     },
     
     'high_detail_content': {
-        'content': ['conv3_1'],  # Earlier layer = more detail??
+        'content': ['conv3_1'],
         'style': ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1'],
         'style_weights': {
             'conv1_1': 1.0,
@@ -130,7 +119,7 @@ LAYER_CONFIGS = {
     
     'minimal_fast': {
         'content': ['conv4_2'],
-        'style': ['conv2_1', 'conv3_1'],  # Only 2 layers
+        'style': ['conv2_1', 'conv3_1'],
         'style_weights': {
             'conv2_1': 1.0,
             'conv3_1': 1.0
@@ -140,7 +129,7 @@ LAYER_CONFIGS = {
     
     'texture_focused': {
         'content': ['conv4_2'],
-        'style': ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2'],  # Early layers + alternate conv
+        'style': ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2'],
         'style_weights': {
             'conv1_1': 1.2,
             'conv1_2': 1.0,
@@ -151,7 +140,6 @@ LAYER_CONFIGS = {
     }
 }
 
-
 ACTIVE_LAYER_CONFIG = "gatys" 
 
 # ------------------------------------------------------------
@@ -159,8 +147,15 @@ ACTIVE_LAYER_CONFIG = "gatys"
 # ------------------------------------------------------------
 def img_to_tensor(path, max_size=IMG_SIZE):
     """load image and preprocess it for VGG19"""
-
-    img = Image.open(path).convert("RGB")
+    img = Image.open(path)
+    
+    # Handle RGBA images (convert to RGB with white background)
+    if img.mode == 'RGBA':
+        background = Image.new('RGB', img.size, (255, 255, 255))
+        background.paste(img, mask=img.split()[3])
+        img = background
+    elif img.mode != 'RGB':
+        img = img.convert('RGB')
 
     # resize
     if max(img.size) > max_size:
@@ -172,7 +167,6 @@ def img_to_tensor(path, max_size=IMG_SIZE):
     transform = transforms.Compose([
         transforms.Resize(size),
         transforms.ToTensor(),
-        # mean and std taken from ImageNet stats
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
@@ -181,80 +175,31 @@ def img_to_tensor(path, max_size=IMG_SIZE):
 
 def tensor_to_img(tensor):
     """convert image back to viewable from optimized tensor"""
-    # get img, get rid of gradients
     img = tensor.cpu().clone().detach()
     img = img.squeeze(0)
-    # de-normalize
+    # de-normalize (reverse VGG19 normalization)
     img = transforms.Normalize(mean=[-0.485/0.229, -0.456/0.224, -0.406/0.225],
                                 std=[1/0.229, 1/0.224, 1/0.225])(img)
-    img = img.clamp(0,1)
+    img = img.clamp(0, 1)
     img = transforms.ToPILImage()(img)
     return img
 
-
 def extract_features(img_tensor, layers, model=vgg):
     """feature extraction"""
-
     x = img_tensor
-
-    # initializing features dictionary
-    features={}
-    
-    # dict for layer name -> index
+    features = {}
     layers_to_extract = {LAYER_INDICES[layer]: layer for layer in layers}
 
     for index, layer in model._modules.items():
         x = layer(x)
-        
         if index in layers_to_extract:
             features[layers_to_extract[index]] = x    
             
     return features
 
-def save_layer(layer_tensor, layer_path, max_channels=16):
-    """helper function to save one layer as a figure"""
-
-    features = layer_tensor.squeeze(0).cpu().detach()
-    num_channels = min(features.shape[0], max_channels)
-
-    fig, axes = plt.subplots(1, num_channels, figsize=(num_channels*2, 2))
-    if num_channels == 1:
-        axes = [axes]
-    
-    for ch in range(num_channels):
-        feature_map = features[ch]
-        
-        # Normalize to [0, 1]
-        feature_map = (feature_map - feature_map.min()) / (feature_map.max() - feature_map.min() + 1e-8)
-        
-        axes[ch].imshow(feature_map, cmap='viridis')
-        axes[ch].axis('off')
-        axes[ch].set_title(f'Ch {ch}', fontsize=8)
-    
-    plt.tight_layout()
-    plt.savefig(layer_path, dpi=150, bbox_inches='tight')
-    plt.close()
-    
-def save_all_layers(img_tensor, img_type, obj_name, output_dir, model=vgg):
-    """saving all the layers"""
-
-    os.makedirs(output_dir, exist_ok=True)
-
-    # get list of all layers
-    layers_list = list(LAYER_INDICES.keys())
-    features = extract_features(img_tensor, layers_list)
-
-    for layer in layers_list:
-        layer_path = os.path.join(output_dir, f"{obj_name}_{img_type}_{layer}.png")
-        save_layer(features[layer],layer_path)
-    
-    return None
-
-
 def gram_matrix(img_tensor):
     """gram matrix to capture style"""
     batch, channels, height, width = img_tensor.size()
-    # flatten
     img_tensor = img_tensor.view(channels, height * width)
     gram = torch.mm(img_tensor, img_tensor.t()) / (channels * height * width)
     return gram
@@ -266,12 +211,12 @@ def nst(content_path, style_path, obj_name, output_path=None,
         alpha=LEARNING_RATE,
         config_name=ACTIVE_LAYER_CONFIG,
         metric_callback=None,
-        output_dir=None,):
-    """core NST implementation: logs numbers (e.g. loss, avg time taken) each step + image results in specified dir
+        output_dir=None):
+    """core NST implementation
     
     Args:
-        content_path: Either a file path (str) or a PyTorch tensor
-        style_path: Either a file path (str) or a PyTorch tensor
+        content_path: Either a file path (str) or a normalized PyTorch tensor
+        style_path: Either a file path (str) or a normalized PyTorch tensor
     """
     
     start_time = time.time()
@@ -289,30 +234,35 @@ def nst(content_path, style_path, obj_name, output_path=None,
     vgg_model.to(device).eval()
 
     print("loading images")
-    # imgs, in tensor format - handle both paths and tensors
+    # Handle both file paths and pre-normalized tensors
     if isinstance(content_path, str):
         content_tensor = img_to_tensor(content_path)
     else:
-        # Already a tensor - make sure it's on the right device
+        # Already a normalized tensor
         content_tensor = content_path.to(device)
         
     if isinstance(style_path, str):
         style_tensor = img_to_tensor(style_path)
     else:
-        # Already a tensor - make sure it's on the right device
+        # Already a normalized tensor
         style_tensor = style_path.to(device)
 
+    print(f"Content tensor shape: {content_tensor.shape}")
+    print(f"Style tensor shape: {style_tensor.shape}")
+
     print("getting features")
-    # extract
+    # extract features
     content_features = extract_features(content_tensor, content_layers, model=vgg_model)
     style_features = extract_features(style_tensor, style_layers, model=vgg_model)
 
     print("calculating grams")
-    # calculate gram
+    # calculate gram matrices for style
     style_grams = {layer: gram_matrix(style_features[layer]) 
                    for layer in style_layers}
     
-    result = content_tensor.clone().requires_grad_(True).to(device)
+    # Initialize result as a copy of content (not style!)
+    # CRITICAL: Must detach before cloning to ensure proper gradient flow
+    result = content_tensor.detach().clone().requires_grad_(True)
     optimizer = optim.Adam([result], lr=alpha)
 
     loss_history = {
@@ -323,48 +273,47 @@ def nst(content_path, style_path, obj_name, output_path=None,
     }
 
     if output_dir:
-            final_output_dir = os.path.join(output_dir, f'{obj_name}')
-            os.makedirs(final_output_dir, exist_ok=True)
-            log_file = os.path.join(final_output_dir, f'training_log_{obj_name}.txt')
-            with open(log_file, 'w') as f:
-                f.write(f"NST training log\n")
-                f.write(f"{'='*80}\n")
-                f.write(f"config: {config_name}\n")
-                f.write(f"content: {content_path if isinstance(content_path, str) else 'tensor'}\n")
-                f.write(f"style: {style_path if isinstance(style_path, str) else 'tensor'}\n")
-                f.write(f"total steps: {num_steps}\n")
-                f.write(f"content weight: {content_weight}\n")
-                f.write(f"style weight: {style_weight}\n")
-                f.write(f"learning rate: {alpha}\n")
-                f.write(f"{'='*80}\n\n")
+        final_output_dir = os.path.join(output_dir, f'{obj_name}')
+        os.makedirs(final_output_dir, exist_ok=True)
+        log_file = os.path.join(final_output_dir, f'training_log_{obj_name}.txt')
+        with open(log_file, 'w') as f:
+            f.write(f"NST training log\n")
+            f.write(f"{'='*80}\n")
+            f.write(f"config: {config_name}\n")
+            f.write(f"content: {content_path if isinstance(content_path, str) else 'tensor'}\n")
+            f.write(f"style: {style_path if isinstance(style_path, str) else 'tensor'}\n")
+            f.write(f"total steps: {num_steps}\n")
+            f.write(f"content weight: {content_weight}\n")
+            f.write(f"style weight: {style_weight}\n")
+            f.write(f"learning rate: {alpha}\n")
+            f.write(f"{'='*80}\n\n")
 
-            print(f"started logging to: {log_file}")
+        print(f"started logging to: {log_file}")
 
-    start_time = time.time()
-    last_log_time = start_time
+    optimization_start = time.time()
+    last_log_time = optimization_start
 
+    print(f"\nStarting optimization for {num_steps} steps...")
+    
     for step in range(num_steps):
         result_features = extract_features(result, content_layers+style_layers, model=vgg_model)
 
-        # content
+        # Calculate content loss
         content_loss = 0
         for layer in content_layers:
             content_loss += torch.mean((result_features[layer] - content_features[layer])**2)
-        # avg loss for all layers
         content_loss = content_loss / len(content_layers)
 
+        # Calculate style loss
         style_loss = 0
         for layer in style_layers:
             result_feature = result_features[layer]
             gram = gram_matrix(result_feature)
             style_gram = style_grams[layer]
-
             layer_weight = style_layer_weights.get(layer, 1.0)
             
             batch, channels, height, width = result_feature.shape
-            layer_style_loss = layer_weight * torch.mean(
-                (gram - style_gram)**2
-            )
+            layer_style_loss = layer_weight * torch.mean((gram - style_gram)**2)
             style_loss += layer_style_loss / (channels * height * width)
 
         total_loss = content_weight * content_loss + style_weight * style_loss
@@ -372,6 +321,10 @@ def nst(content_path, style_path, obj_name, output_path=None,
         optimizer.zero_grad()
         total_loss.backward()
         optimizer.step()
+        
+        # Clamp the result to prevent it from going too far outside normalized range
+        with torch.no_grad():
+            result.clamp_(-3, 3)
 
         loss_history['total'].append(total_loss.item())
         loss_history['content'].append(content_loss.item())
@@ -383,24 +336,21 @@ def nst(content_path, style_path, obj_name, output_path=None,
 
         if step % 100 == 0:
             current_time = time.time()
-            cumulative_time = current_time - start_time
+            cumulative_time = current_time - optimization_start
             step_time = current_time - last_log_time
             
-            # console
             print(f"step {step:4d}/{num_steps} | "
                 f"total loss: {total_loss.item():10.2f} | "
                 f"content loss: {content_loss.item():8.4f} | "
                 f"style loss: {style_loss.item():10.6f} | "
-                f"time taken (cumulative): {cumulative_time:6.2f}s | " 
-                f"time taken (~100 steps): {step_time:6.2f}s")
+                f"time (cum): {cumulative_time:6.2f}s | " 
+                f"time (100): {step_time:6.2f}s")
             
-            # Save image
             if output_dir:
                 intm_img = tensor_to_img(result)
                 intm_path = os.path.join(final_output_dir, f'{obj_name}_step_{step:04d}.png')
                 intm_img.save(intm_path)
                 
-                # Append to log file
                 with open(log_file, 'a') as f:
                     f.write(f"{step:<8} {total_loss.item():<15.2f} "
                         f"{content_loss.item():<15.4f} {style_loss.item():<15.6f} "
@@ -415,12 +365,11 @@ def nst(content_path, style_path, obj_name, output_path=None,
     if output_dir:
         final_path = os.path.join(final_output_dir, f'{obj_name}_final.png')
         final_img.save(final_path)
-        print(f"saved final result in {final_path}")
+        print(f"\nSaved final result: {final_path}")
         
-        # Append final summary to log
         with open(log_file, 'a') as f:
             f.write(f"\n{'='*80}\n")
-            f.write(f"FINAL RESULTS!!\n")
+            f.write(f"FINAL RESULTS\n")
             f.write(f"{'='*80}\n")
             f.write(f"total time: {total_time:.2f}s ({total_time/60:.2f} minutes)\n")
             f.write(f"avg time per step: {total_time/num_steps:.3f}s\n")
@@ -428,9 +377,9 @@ def nst(content_path, style_path, obj_name, output_path=None,
             f.write(f"final content loss: {loss_history['content'][-1]:.4f}\n")
             f.write(f"final style loss: {loss_history['style'][-1]:.6f}\n")
         
-        print(f"training log saved in {log_file}")
+        print(f"Training log: {log_file}")
     
-    print(f"time taken: {total_time:.2f}s")
+    print(f"Total time: {total_time:.2f}s")
     
     return final_img
 

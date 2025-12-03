@@ -28,7 +28,7 @@ IMAGE_PAIRS = [
         # matching position images, not segmented
         "name": "butterfly_matched",
         "content": "../test_imgs/butterfly2.jpg",
-        "style": "../test_imgs/buterfly2_o_p.png"
+        "style": "../test_imgs/butterfly2_o_p.png"
     },
     {
         # matching position images, segmented
