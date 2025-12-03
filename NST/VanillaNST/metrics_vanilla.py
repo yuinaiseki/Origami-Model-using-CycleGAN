@@ -44,8 +44,21 @@ transform = transforms.Compose([
     transforms.ToTensor()
 ])
 
-def to_numpy(x):
-    return np.transpose(np.clip(x.squeeze(0).detach().cpu().numpy(), 0, 1), (1,2,0))
+# Denormalization transform (reverse of VGG19 normalization)
+denorm = transforms.Normalize(
+    mean=[-0.485/0.229, -0.456/0.224, -0.406/0.225],
+    std=[1/0.229, 1/0.224, 1/0.225]
+)
+
+def to_numpy(tensor):
+    """Convert tensor to numpy array with proper denormalization"""
+    # Denormalize first
+    img = tensor.clone().detach()
+    img = denorm(img.squeeze(0))
+    # Clamp to [0, 1] range
+    img = torch.clamp(img, 0, 1)
+    # Convert to numpy
+    return np.transpose(img.cpu().numpy(), (1, 2, 0))
 
 def gram_matrix(tensor):
     b, c, h, w = tensor.size()
@@ -76,6 +89,10 @@ def run_nst_with_metrics(config_name, content, style, image_name):
     cfg = LAYER_CONFIGS[config_name]
 
     def metric_callback(step, total_loss, content_loss, style_loss, result):
+        # Only record every 10 steps
+        if step % 10 != 0:
+            return
+            
         result_np = to_numpy(result)
         content_np = to_numpy(content)
         
@@ -86,7 +103,7 @@ def run_nst_with_metrics(config_name, content, style, image_name):
         content_np = content_np[:min_height, :min_width]
         
         ssim_val = ssim(content_np, result_np, channel_axis=2, data_range=1.0)
-        psnr_val = psnr(content_np, result_np)
+        psnr_val = psnr(content_np, result_np, data_range=1.0)
         
         # Calculate gram distance
         with torch.no_grad():
@@ -111,7 +128,7 @@ def run_nst_with_metrics(config_name, content, style, image_name):
 
 def plot(metric_name, values, steps, config_name, image_name):
     plt.figure(figsize=(6,4))
-    plt.plot(steps, values, marker="o")
+    plt.plot(steps, values, marker="o", markersize=2, linewidth=1)  # Smaller markers
     plt.xlabel("Step")
     plt.ylabel(metric_name)
     plt.title(f"{metric_name} vs Step - {image_name}")
