@@ -259,8 +259,6 @@ def gram_matrix(img_tensor):
     gram = torch.mm(img_tensor, img_tensor.t()) / (channels * height * width)
     return gram
     
-
-
 def nst(content_path, style_path, obj_name, output_path=None,
         num_steps=NUM_STEPS, 
         style_weight=STYLE_WEIGHT, 
@@ -269,7 +267,12 @@ def nst(content_path, style_path, obj_name, output_path=None,
         config_name=ACTIVE_LAYER_CONFIG,
         metric_callback=None,
         output_dir=None,):
-    """core NST implementation: logs numbers (e.g. loss, avg time taken) each step + image results in specified dir"""
+    """core NST implementation: logs numbers (e.g. loss, avg time taken) each step + image results in specified dir
+    
+    Args:
+        content_path: Either a file path (str) or a PyTorch tensor
+        style_path: Either a file path (str) or a PyTorch tensor
+    """
     
     start_time = time.time()
     
@@ -280,27 +283,34 @@ def nst(content_path, style_path, obj_name, output_path=None,
     style_layer_weights = config['style_weights']
 
     # model
-    vgg = vgg19(pretrained=True).features
-    for param in vgg.parameters():
+    vgg_model = vgg19(pretrained=True).features
+    for param in vgg_model.parameters():
         param.requires_grad_(False)
-    vgg.to(device).eval()
+    vgg_model.to(device).eval()
 
     print("loading images")
-    # imgs, in tensor format
-    content_tensor = img_to_tensor(content_path)
-    style_tensor = img_to_tensor(style_path)
+    # imgs, in tensor format - handle both paths and tensors
+    if isinstance(content_path, str):
+        content_tensor = img_to_tensor(content_path)
+    else:
+        content_tensor = content_path
+        
+    if isinstance(style_path, str):
+        style_tensor = img_to_tensor(style_path)
+    else:
+        style_tensor = style_path
 
     print("getting features")
     # extract
-    content_features = extract_features(content_tensor, content_layers, model=vgg)
-    style_features = extract_features(style_tensor, style_layers, model=vgg)
+    content_features = extract_features(content_tensor, content_layers, model=vgg_model)
+    style_features = extract_features(style_tensor, style_layers, model=vgg_model)
 
     print("calculating grams")
     # calculate gram
     style_grams = {layer: gram_matrix(style_features[layer]) 
                    for layer in style_layers}
     
-    result = content_tensor.clone().requires_grad_(True).to(device)          # change to style_tensor for gatys faithulness?
+    result = content_tensor.clone().requires_grad_(True).to(device)
     optimizer = optim.Adam([result], lr=alpha)
 
     loss_history = {
@@ -318,8 +328,8 @@ def nst(content_path, style_path, obj_name, output_path=None,
                 f.write(f"NST training log\n")
                 f.write(f"{'='*80}\n")
                 f.write(f"config: {config_name}\n")
-                f.write(f"content: {content_path}\n")
-                f.write(f"style: {style_path}\n")
+                f.write(f"content: {content_path if isinstance(content_path, str) else 'tensor'}\n")
+                f.write(f"style: {style_path if isinstance(style_path, str) else 'tensor'}\n")
                 f.write(f"total steps: {num_steps}\n")
                 f.write(f"content weight: {content_weight}\n")
                 f.write(f"style weight: {style_weight}\n")
@@ -332,12 +342,12 @@ def nst(content_path, style_path, obj_name, output_path=None,
     last_log_time = start_time
 
     for step in range(num_steps):
-        result_features = extract_features(result, content_layers+style_layers, model=vgg)
+        result_features = extract_features(result, content_layers+style_layers, model=vgg_model)
 
         # content
         content_loss = 0
         for layer in content_layers:
-            content_loss += torch.mean((result_features[layer] - content_features[layer])**2) # change?
+            content_loss += torch.mean((result_features[layer] - content_features[layer])**2)
         # avg loss for all layers
         content_loss = content_loss / len(content_layers)
 
@@ -374,7 +384,7 @@ def nst(content_path, style_path, obj_name, output_path=None,
             cumulative_time = current_time - start_time
             step_time = current_time - last_log_time
             
-            # consol
+            # console
             print(f"step {step:4d}/{num_steps} | "
                 f"total loss: {total_loss.item():10.2f} | "
                 f"content loss: {content_loss.item():8.4f} | "
@@ -418,7 +428,7 @@ def nst(content_path, style_path, obj_name, output_path=None,
         
         print(f"training log saved in {log_file}")
     
-    print(f"time taken us {total_time:.2f}")
+    print(f"time taken: {total_time:.2f}s")
     
     return final_img
 
