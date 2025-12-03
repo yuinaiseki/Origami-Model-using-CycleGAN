@@ -1,5 +1,8 @@
 """ Vanilla NST implementation """
 
+# ------------------------------------------------------------
+# 1. IMPORTS
+# ------------------------------------------------------------
 import torch
 from torchvision.models import vgg19
 from torchvision import transforms
@@ -9,8 +12,12 @@ import torch.optim as optim
 import time
 import os
 
+vgg = vgg19(pretrained=True).features
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# CONFIG
+# ------------------------------------------------------------
+# 2. MODEL DEFINITIONS 
+# ------------------------------------------------------------
 IMG_SIZE = 512                  # change to 256 for quick testing
 LEARNING_RATE = 0.003
 CONTENT_WEIGHT = 1
@@ -36,6 +43,9 @@ LAYER_INDICES = {
     'conv5_4': '34'
 }
 
+# ------------------------------------------------------------
+# 3. CONFIGS
+# ------------------------------------------------------------
 """
 Different configurations we tried, with details/rationale for each one:
     gatys: Baseline - proven to work well, balanced across scales
@@ -143,10 +153,10 @@ LAYER_CONFIGS = {
 
 
 ACTIVE_LAYER_CONFIG = "gatys" 
-vgg = vgg19(pretrained=True).features
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-
+# ------------------------------------------------------------
+# 4. UTILS
+# ------------------------------------------------------------
 def img_to_tensor(path, max_size=IMG_SIZE):
     """load image and preprocess it for VGG19"""
 
@@ -240,6 +250,7 @@ def save_all_layers(img_tensor, img_type, obj_name, output_dir, model=vgg):
     
     return None
 
+
 def gram_matrix(img_tensor):
     """gram matrix to capture style"""
     batch, channels, height, width = img_tensor.size()
@@ -248,12 +259,14 @@ def gram_matrix(img_tensor):
     gram = torch.mm(img_tensor, img_tensor.t())
     return gram
 
+
 def nst(content_path, style_path, obj_name, output_path=None,
         num_steps=NUM_STEPS, 
         style_weight=STYLE_WEIGHT, 
         content_weight=CONTENT_WEIGHT,
         alpha=LEARNING_RATE,
         config_name=ACTIVE_LAYER_CONFIG,
+        metric_callback=None,
         output_dir=None,):
     """core NST implementation: logs numbers (e.g. loss, avg time taken) each step + image results in specified dir"""
     
@@ -351,6 +364,9 @@ def nst(content_path, style_path, obj_name, output_path=None,
         loss_history['content'].append(content_loss.item())
         loss_history['style'].append(style_loss.item())
         loss_history['step'].append(step)
+        
+        if metric_callback:
+            metric_callback(step, total_loss.item(), content_loss.item(), style_loss.item(), result)
 
         if step % 100 == 0:
             current_time = time.time()
@@ -516,7 +532,9 @@ def compare_configs(content_path, style_path, obj_name, output_dir,
     
     return results
 
-# for standalone testing
+# ------------------------------------------------------------
+# 4. STANDALONE TESTING
+# ------------------------------------------------------------
 if __name__ == "__main__":
 
     content_path = "./test_imgs/cat.jpg"
