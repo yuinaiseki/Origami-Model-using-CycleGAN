@@ -256,8 +256,9 @@ def gram_matrix(img_tensor):
     batch, channels, height, width = img_tensor.size()
     # flatten
     img_tensor = img_tensor.view(channels, height * width)
-    gram = torch.mm(img_tensor, img_tensor.t())
+    gram = torch.mm(img_tensor, img_tensor.t()) / (channels * height * width)
     return gram
+    
 
 
 def nst(content_path, style_path, obj_name, output_path=None,
