@@ -135,7 +135,7 @@ def run_nst_with_metrics(config_name, content, style, image_name):
         metrics["total_loss"].append(total_loss)
 
     # Run NST
-    nst(content, style, f"{image_name}_{config_name}", num_steps=500, 
+    nst(content, style, f"{image_name}_{config_name}", num_steps=2000, 
         config_name=config_name, output_dir=SAVE_DIR, metric_callback=metric_callback)
 
     return metrics

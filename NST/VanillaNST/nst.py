@@ -293,12 +293,14 @@ def nst(content_path, style_path, obj_name, output_path=None,
     if isinstance(content_path, str):
         content_tensor = img_to_tensor(content_path)
     else:
-        content_tensor = content_path
+        # Already a tensor - make sure it's on the right device
+        content_tensor = content_path.to(device)
         
     if isinstance(style_path, str):
         style_tensor = img_to_tensor(style_path)
     else:
-        style_tensor = style_path
+        # Already a tensor - make sure it's on the right device
+        style_tensor = style_path.to(device)
 
     print("getting features")
     # extract
