@@ -2,7 +2,7 @@ import json
 import os
 import re
 import matplotlib.pyplot as plt
-from nst import nst, LAYER_CONFIGS, vgg
+from nst import nst, LAYER_CONFIGS, vgg, extract_features
 from skimage.metrics import structural_similarity as ssim
 from skimage.metrics import peak_signal_noise_ratio as psnr
 import numpy as np
@@ -14,6 +14,7 @@ SAVE_DIR = "evaluate/vanilla"
 os.makedirs(SAVE_DIR, exist_ok=True)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+vgg = vgg.to(device).eval()
 
 # Image pairs to test
 IMAGE_PAIRS = [
@@ -78,12 +79,18 @@ def run_nst_with_metrics(config_name, content, style, image_name):
         result_np = to_numpy(result)
         content_np = to_numpy(content)
         
+        # Ensure both images have the same dimensions
+        min_height = min(result_np.shape[0], content_np.shape[0])
+        min_width = min(result_np.shape[1], content_np.shape[1])
+        result_np = result_np[:min_height, :min_width]
+        content_np = content_np[:min_height, :min_width]
+        
         ssim_val = ssim(content_np, result_np, channel_axis=2, data_range=1.0)
         psnr_val = psnr(content_np, result_np)
         
         # Calculate gram distance
         with torch.no_grad():
-            result_feats = vgg(result)
+            result_feats = extract_features(result, cfg['style'])
         
         gram_dist = 0
         for layer in cfg["style"]:
@@ -97,7 +104,7 @@ def run_nst_with_metrics(config_name, content, style, image_name):
         metrics["total_loss"].append(total_loss)
 
     # Run NST
-    nst(content_path, style_path, f"{image_name}_{config_name}", num_steps=500, 
+    nst(content, style, f"{image_name}_{config_name}", num_steps=500, 
         config_name=config_name, output_dir=SAVE_DIR, metric_callback=metric_callback)
 
     return metrics
@@ -134,14 +141,14 @@ if __name__ == "__main__":
             # Precompute style features
             cfg = LAYER_CONFIGS[config_name]
             with torch.no_grad():
-                style_feats = vgg(style)
+                style_feats = extract_features(style, cfg['style'])
             style_grams = {
                 layer: gram_matrix(style_feats[layer])
                 for layer in cfg["style"]
             }
             
             metrics = run_nst_with_metrics(config_name, content, style, image_name)
-
+            
             # Save metrics to JSON
             metrics_clean = {
                 k: [float(v) for v in metrics[k]] if isinstance(metrics[k], list) else metrics[k]
