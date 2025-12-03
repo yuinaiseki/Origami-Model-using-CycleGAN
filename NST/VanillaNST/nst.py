@@ -1,4 +1,3 @@
-
 """ Vanilla NST implementation """
 
 # ------------------------------------------------------------
@@ -175,8 +174,10 @@ def img_to_tensor(path, max_size=IMG_SIZE):
 
 def tensor_to_img(tensor):
     """convert image back to viewable from optimized tensor"""
-    img = tensor.cpu().clone().detach()
+    # Explicitly detach and clone to ensure we get the current state
+    img = tensor.detach().cpu().clone()
     img = img.squeeze(0)
+    
     # de-normalize (reverse VGG19 normalization)
     img = transforms.Normalize(mean=[-0.485/0.229, -0.456/0.224, -0.406/0.225],
                                 std=[1/0.229, 1/0.224, 1/0.225])(img)
@@ -260,9 +261,9 @@ def nst(content_path, style_path, obj_name, output_path=None,
     style_grams = {layer: gram_matrix(style_features[layer]) 
                    for layer in style_layers}
     
-    # Initialize result as a copy of content (not style!)
-    # CRITICAL: Must detach before cloning to ensure proper gradient flow
-    result = content_tensor.detach().clone().requires_grad_(True)
+    # Initialize result as a copy of content
+    result = content_tensor.clone()
+    result.requires_grad_(True)
     optimizer = optim.Adam([result], lr=alpha)
 
     loss_history = {
@@ -294,8 +295,10 @@ def nst(content_path, style_path, obj_name, output_path=None,
     last_log_time = optimization_start
 
     print(f"\nStarting optimization for {num_steps} steps...")
+    print(f"Initial result mean: {result.mean().item():.4f}, std: {result.std().item():.4f}")
     
     for step in range(num_steps):
+        # Extract features from current result
         result_features = extract_features(result, content_layers+style_layers, model=vgg_model)
 
         # Calculate content loss
@@ -318,13 +321,10 @@ def nst(content_path, style_path, obj_name, output_path=None,
 
         total_loss = content_weight * content_loss + style_weight * style_loss
         
+        # Backpropagation
         optimizer.zero_grad()
         total_loss.backward()
         optimizer.step()
-        
-        # Clamp the result to prevent it from going too far outside normalized range
-        with torch.no_grad():
-            result.clamp_(-3, 3)
 
         loss_history['total'].append(total_loss.item())
         loss_history['content'].append(content_loss.item())
@@ -341,15 +341,18 @@ def nst(content_path, style_path, obj_name, output_path=None,
             
             print(f"step {step:4d}/{num_steps} | "
                 f"total loss: {total_loss.item():10.2f} | "
-                f"content loss: {content_loss.item():8.4f} | "
-                f"style loss: {style_loss.item():10.6f} | "
-                f"time (cum): {cumulative_time:6.2f}s | " 
-                f"time (100): {step_time:6.2f}s")
+                f"content: {content_loss.item():8.4f} | "
+                f"style: {style_loss.item():10.6f} | "
+                f"result mean: {result.mean().item():7.4f} | "
+                f"result std: {result.std().item():6.4f}")
             
             if output_dir:
-                intm_img = tensor_to_img(result)
+                # Force detach and clone before converting
+                result_to_save = result.detach().clone()
+                intm_img = tensor_to_img(result_to_save)
                 intm_path = os.path.join(final_output_dir, f'{obj_name}_step_{step:04d}.png')
                 intm_img.save(intm_path)
+                print(f"    Saved image to {intm_path}")
                 
                 with open(log_file, 'a') as f:
                     f.write(f"{step:<8} {total_loss.item():<15.2f} "
