@@ -38,17 +38,31 @@ IMAGE_PAIRS = [
     },
 ]
 
-# Utility functions
+# Transform WITH normalization (for VGG19)
 transform = transforms.Compose([
     transforms.Resize((256, 256)),
-    transforms.ToTensor()
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-# Denormalization transform (reverse of VGG19 normalization)
+# Denormalization transform (for visualization and metrics)
 denorm = transforms.Normalize(
     mean=[-0.485/0.229, -0.456/0.224, -0.406/0.225],
     std=[1/0.229, 1/0.224, 1/0.225]
 )
+
+def load_image(path):
+    """Load image and convert to RGB (handles RGBA)"""
+    img = Image.open(path)
+    # Convert RGBA to RGB if needed
+    if img.mode == 'RGBA':
+        # Create a white background
+        background = Image.new('RGB', img.size, (255, 255, 255))
+        background.paste(img, mask=img.split()[3])  # Use alpha channel as mask
+        img = background
+    elif img.mode != 'RGB':
+        img = img.convert('RGB')
+    return img
 
 def to_numpy(tensor):
     """Convert tensor to numpy array with proper denormalization"""
@@ -148,9 +162,12 @@ if __name__ == "__main__":
 
         print(f"Processing image pair: {image_name}")
 
-        # Load content and style images
-        content = transform(Image.open(content_path)).unsqueeze(0).to(device)
-        style = transform(Image.open(style_path)).unsqueeze(0).to(device)
+        # Load content and style images with RGBA handling
+        content_img = load_image(content_path)
+        style_img = load_image(style_path)
+        
+        content = transform(content_img).unsqueeze(0).to(device)
+        style = transform(style_img).unsqueeze(0).to(device)
 
         for config_name in configs_to_test:
             print(f"Evaluating configuration: {config_name}")
