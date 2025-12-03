@@ -261,9 +261,13 @@ def nst(content_path, style_path, obj_name, output_path=None,
     style_grams = {layer: gram_matrix(style_features[layer]) 
                    for layer in style_layers}
     
-    # Initialize result as a copy of content
-    result = content_tensor.clone()
+    # Initialize result - CRITICAL: Create new tensor with requires_grad
+    # Don't use .clone() on input tensors as it may break gradient flow
+    result = torch.randn_like(content_tensor, requires_grad=True, device=device)
+    with torch.no_grad():
+        result.copy_(content_tensor)
     result.requires_grad_(True)
+    
     optimizer = optim.Adam([result], lr=alpha)
 
     loss_history = {
