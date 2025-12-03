@@ -1,8 +1,5 @@
 """ Vanilla NST implementation """
 
-# ------------------------------------------------------------
-# 1. IMPORTS
-# ------------------------------------------------------------
 import torch
 from torchvision.models import vgg19
 from torchvision import transforms
@@ -15,10 +12,8 @@ import os
 vgg = vgg19(pretrained=True).features
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# ------------------------------------------------------------
-# 2. MODEL DEFINITIONS 
-# ------------------------------------------------------------
-IMG_SIZE = 512                  # change to 256 for quick testing
+# CONFIG
+IMG_SIZE = 512
 LEARNING_RATE = 0.003
 CONTENT_WEIGHT = 1
 STYLE_WEIGHT = 1e6
@@ -43,9 +38,6 @@ LAYER_INDICES = {
     'conv5_4': '34'
 }
 
-# ------------------------------------------------------------
-# 3. CONFIGS
-# ------------------------------------------------------------
 LAYER_CONFIGS = {
     'gatys': {
         'content': ['conv4_2'],
@@ -59,7 +51,6 @@ LAYER_CONFIGS = {
         },
         'description': 'Original Gatys - balanced multi-scale style transfer'
     },
-        
     'geometric_emphasis': {
         'content': ['conv4_2'],
         'style': ['conv2_1', 'conv3_1', 'conv4_1'],
@@ -70,7 +61,6 @@ LAYER_CONFIGS = {
         },
         'description': 'Mid-level emphasis - strong geometric patterns and edges for origami'
     },
-    
     'edge_heavy': {
         'content': ['conv4_2'],
         'style': ['conv1_1', 'conv2_1'],
@@ -80,7 +70,6 @@ LAYER_CONFIGS = {
         },
         'description': 'Early layers only - sharp folds and crisp edges'
     },
-    
     'planar_surfaces': {
         'content': ['conv4_2'],
         'style': ['conv3_1', 'conv4_1'],
@@ -90,7 +79,6 @@ LAYER_CONFIGS = {
         },
         'description': 'Mid-deep layers - flat paper-like surfaces'
     },
-    
     'equal_weights': {
         'content': ['conv4_2'],
         'style': ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1'],
@@ -103,7 +91,6 @@ LAYER_CONFIGS = {
         },
         'description': 'Equal weights - no bias toward any scale'
     },
-    
     'high_detail_content': {
         'content': ['conv3_1'],
         'style': ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1'],
@@ -115,7 +102,6 @@ LAYER_CONFIGS = {
         },
         'description': 'Earlier content layer - preserves more fine details'
     },
-    
     'minimal_fast': {
         'content': ['conv4_2'],
         'style': ['conv2_1', 'conv3_1'],
@@ -125,7 +111,6 @@ LAYER_CONFIGS = {
         },
         'description': 'Minimal layers - faster computation, test baseline'
     },
-    
     'texture_focused': {
         'content': ['conv4_2'],
         'style': ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2'],
@@ -139,16 +124,13 @@ LAYER_CONFIGS = {
     }
 }
 
-ACTIVE_LAYER_CONFIG = "gatys" 
+ACTIVE_LAYER_CONFIG = "gatys"
 
-# ------------------------------------------------------------
-# 4. UTILS
-# ------------------------------------------------------------
 def img_to_tensor(path, max_size=IMG_SIZE):
     """load image and preprocess it for VGG19"""
     img = Image.open(path)
     
-    # Handle RGBA images (convert to RGB with white background)
+    # Handle RGBA images
     if img.mode == 'RGBA':
         background = Image.new('RGB', img.size, (255, 255, 255))
         background.paste(img, mask=img.split()[3])
@@ -156,13 +138,11 @@ def img_to_tensor(path, max_size=IMG_SIZE):
     elif img.mode != 'RGB':
         img = img.convert('RGB')
 
-    # resize
     if max(img.size) > max_size:
         size = max_size
     else:
-        size = max(img.size) 
+        size = max(img.size)
 
-    # resize and normalize image for vgg19
     transform = transforms.Compose([
         transforms.Resize(size),
         transforms.ToTensor(),
@@ -174,11 +154,8 @@ def img_to_tensor(path, max_size=IMG_SIZE):
 
 def tensor_to_img(tensor):
     """convert image back to viewable from optimized tensor"""
-    # Explicitly detach and clone to ensure we get the current state
-    img = tensor.detach().cpu().clone()
+    img = tensor.cpu().clone().detach()
     img = img.squeeze(0)
-    
-    # de-normalize (reverse VGG19 normalization)
     img = transforms.Normalize(mean=[-0.485/0.229, -0.456/0.224, -0.406/0.225],
                                 std=[1/0.229, 1/0.224, 1/0.225])(img)
     img = img.clamp(0, 1)
@@ -194,75 +171,61 @@ def extract_features(img_tensor, layers, model=vgg):
     for index, layer in model._modules.items():
         x = layer(x)
         if index in layers_to_extract:
-            features[layers_to_extract[index]] = x    
-            
+            features[layers_to_extract[index]] = x
+    
     return features
 
 def gram_matrix(img_tensor):
-    """gram matrix to capture style"""
+    """gram matrix to capture style - NO NORMALIZATION"""
     batch, channels, height, width = img_tensor.size()
     img_tensor = img_tensor.view(channels, height * width)
-    gram = torch.mm(img_tensor, img_tensor.t()) / (channels * height * width)
+    gram = torch.mm(img_tensor, img_tensor.t())
     return gram
-    
+
 def nst(content_path, style_path, obj_name, output_path=None,
-        num_steps=NUM_STEPS, 
-        style_weight=STYLE_WEIGHT, 
+        num_steps=NUM_STEPS,
+        style_weight=STYLE_WEIGHT,
         content_weight=CONTENT_WEIGHT,
         alpha=LEARNING_RATE,
         config_name=ACTIVE_LAYER_CONFIG,
         metric_callback=None,
         output_dir=None):
-    """core NST implementation
-    
-    Args:
-        content_path: Either a file path (str) or a normalized PyTorch tensor
-        style_path: Either a file path (str) or a normalized PyTorch tensor
-    """
+    """core NST implementation"""
     
     start_time = time.time()
     
-    # get config
     config = LAYER_CONFIGS[config_name]
     content_layers = config["content"]
     style_layers = config["style"]
     style_layer_weights = config['style_weights']
 
-    # model
     vgg_model = vgg19(pretrained=True).features
     for param in vgg_model.parameters():
         param.requires_grad_(False)
     vgg_model.to(device).eval()
 
     print("loading images")
-    # Handle both file paths and pre-normalized tensors
+    # Handle both paths and tensors
     if isinstance(content_path, str):
         content_tensor = img_to_tensor(content_path)
     else:
-        # Already a normalized tensor
         content_tensor = content_path.to(device)
         
     if isinstance(style_path, str):
         style_tensor = img_to_tensor(style_path)
     else:
-        # Already a normalized tensor
         style_tensor = style_path.to(device)
 
-    print(f"Content tensor shape: {content_tensor.shape}")
-    print(f"Style tensor shape: {style_tensor.shape}")
-
     print("getting features")
-    # extract features
     content_features = extract_features(content_tensor, content_layers, model=vgg_model)
     style_features = extract_features(style_tensor, style_layers, model=vgg_model)
 
     print("calculating grams")
-    # calculate gram matrices for style
-    style_grams = {layer: gram_matrix(style_features[layer]) 
+    style_grams = {layer: gram_matrix(style_features[layer])
                    for layer in style_layers}
     
-    # Initialize result - Use nn.Parameter to ensure it's optimizable
-    result = torch.nn.Parameter(content_tensor.clone().detach())
+    # CRITICAL: This is how it works in your original version
+    result = content_tensor.clone().requires_grad_(True).to(device)
     optimizer = optim.Adam([result], lr=alpha)
 
     loss_history = {
@@ -287,26 +250,20 @@ def nst(content_path, style_path, obj_name, output_path=None,
             f.write(f"style weight: {style_weight}\n")
             f.write(f"learning rate: {alpha}\n")
             f.write(f"{'='*80}\n\n")
-
         print(f"started logging to: {log_file}")
 
-    optimization_start = time.time()
-    last_log_time = optimization_start
+    last_log_time = time.time()
 
-    print(f"\nStarting optimization for {num_steps} steps...")
-    print(f"Initial result mean: {result.mean().item():.4f}, std: {result.std().item():.4f}")
-    
     for step in range(num_steps):
-        # Extract features from current result
         result_features = extract_features(result, content_layers+style_layers, model=vgg_model)
 
-        # Calculate content loss
+        # Content loss
         content_loss = 0
         for layer in content_layers:
             content_loss += torch.mean((result_features[layer] - content_features[layer])**2)
         content_loss = content_loss / len(content_layers)
 
-        # Calculate style loss
+        # Style loss - MATCHES YOUR WORKING VERSION
         style_loss = 0
         for layer in style_layers:
             result_feature = result_features[layer]
@@ -320,7 +277,6 @@ def nst(content_path, style_path, obj_name, output_path=None,
 
         total_loss = content_weight * content_loss + style_weight * style_loss
         
-        # Backpropagation
         optimizer.zero_grad()
         total_loss.backward()
         optimizer.step()
@@ -335,23 +291,20 @@ def nst(content_path, style_path, obj_name, output_path=None,
 
         if step % 100 == 0:
             current_time = time.time()
-            cumulative_time = current_time - optimization_start
+            cumulative_time = current_time - start_time
             step_time = current_time - last_log_time
             
             print(f"step {step:4d}/{num_steps} | "
                 f"total loss: {total_loss.item():10.2f} | "
-                f"content: {content_loss.item():8.4f} | "
-                f"style: {style_loss.item():10.6f} | "
-                f"result mean: {result.mean().item():7.4f} | "
-                f"result std: {result.std().item():6.4f}")
+                f"content loss: {content_loss.item():8.4f} | "
+                f"style loss: {style_loss.item():10.6f} | "
+                f"time (cum): {cumulative_time:6.2f}s | "
+                f"time (100): {step_time:6.2f}s")
             
             if output_dir:
-                # Force detach and clone before converting
-                result_to_save = result.detach().clone()
-                intm_img = tensor_to_img(result_to_save)
+                intm_img = tensor_to_img(result)
                 intm_path = os.path.join(final_output_dir, f'{obj_name}_step_{step:04d}.png')
                 intm_img.save(intm_path)
-                print(f"    Saved image to {intm_path}")
                 
                 with open(log_file, 'a') as f:
                     f.write(f"{step:<8} {total_loss.item():<15.2f} "
@@ -367,11 +320,11 @@ def nst(content_path, style_path, obj_name, output_path=None,
     if output_dir:
         final_path = os.path.join(final_output_dir, f'{obj_name}_final.png')
         final_img.save(final_path)
-        print(f"\nSaved final result: {final_path}")
+        print(f"saved final result in {final_path}")
         
         with open(log_file, 'a') as f:
             f.write(f"\n{'='*80}\n")
-            f.write(f"FINAL RESULTS\n")
+            f.write(f"FINAL RESULTS!!\n")
             f.write(f"{'='*80}\n")
             f.write(f"total time: {total_time:.2f}s ({total_time/60:.2f} minutes)\n")
             f.write(f"avg time per step: {total_time/num_steps:.3f}s\n")
@@ -379,9 +332,9 @@ def nst(content_path, style_path, obj_name, output_path=None,
             f.write(f"final content loss: {loss_history['content'][-1]:.4f}\n")
             f.write(f"final style loss: {loss_history['style'][-1]:.6f}\n")
         
-        print(f"Training log: {log_file}")
+        print(f"training log saved in {log_file}")
     
-    print(f"Total time: {total_time:.2f}s")
+    print(f"time taken: {total_time:.2f}s")
     
     return final_img
 
