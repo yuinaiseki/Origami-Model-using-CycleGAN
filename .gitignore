@@ -17,6 +17,25 @@ CycleGAN/experiments/*/results/*.png
 !CycleGAN/experiments/*/results/output_test.png
 CycleGAN/experiments/*/checkpoints/
 CycleGAN/experiments/*/exported/*savedmodel/
+
+CycleGAN2/data/
+CycleGAN2/__pycache__/
+CycleGAN2/.ipynb_checkpoints/
+CycleGAN2/results/
+CycleGAN2/experiments/*/results/*.png
+!CycleGAN2/experiments/*/results/output_test.png
+CycleGAN2/experiments/*/checkpoints/
+CycleGAN2/experiments/*/exported/*savedmodel/
+
+CycleGAN3/data/
+CycleGAN3/__pycache__/
+CycleGAN3/.ipynb_checkpoints/
+CycleGAN3/results/
+CycleGAN3/experiments/*/results/*.png
+!CycleGAN3/experiments/*/results/output_test.png
+CycleGAN3/experiments/*/checkpoints/
+CycleGAN3/experiments/*/exported/*savedmodel/
+
 #Vanilla NST
 NST/results
 NST/layers
