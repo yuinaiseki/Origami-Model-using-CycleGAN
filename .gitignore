@@ -40,7 +40,8 @@ CycleGAN3/experiments/*/exported/*savedmodel/
 NST/results
 NST/layers
 NST/FastNST/checkpoints/
-NST/FastNST/evaluate
+NST/FastNST/evaluate/v2/test/
+NST/FastNST/evaluate/v3/test/
 
 #Feed Forward NST
 NST/checkpoints_nststyle
