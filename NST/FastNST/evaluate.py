@@ -15,24 +15,13 @@ from utils.gram import gram_matrix
 
 TEST_PATH  = "../../Data/dataset/clean/split/segmented/testB/butterfly"
 STYLE_PATH = "../../Data/dataset/clean/split/origami/test/butterfly"
-RUN_ROOT   = "evaluate/v2"    
+RUN_ROOT   = "evaluate/v3"    
 
 def load_image(path, device, size=256):
     tf = T.Compose([T.Resize((size, size)), T.ToTensor()])
     img = Image.open(path).convert("RGB")
     return tf(img).unsqueeze(0).to(device)
 
-
-def save_side_by_side(content, generated, save_path):
-    content_img = T.ToPILImage()(content.squeeze(0).cpu())
-    gen_img     = T.ToPILImage()(generated.squeeze(0).cpu())
-
-    w, h = content_img.size
-    combined = Image.new("RGB", (w * 2, h))
-    combined.paste(content_img, (0, 0))
-    combined.paste(gen_img, (w, 0))
-
-    combined.save(save_path)
 
 def compute_style_grams(style_path, device, vgg, layer_cfg):
     files = [f for f in os.listdir(style_path) if f.lower().endswith((".jpg", ".png"))]
@@ -99,8 +88,6 @@ def evaluate_one_model(model_name, model):
         out_path = os.path.join(outputs_dir, f"output_{idx:04d}.png")
         T.ToPILImage()(gen.squeeze(0).cpu()).save(out_path)
 
-        compare_path = os.path.join(outputs_dir, f"compare_{idx:04d}.png")
-        save_side_by_side(rgb, gen, compare_path)
 
         gen_feats = vgg(gen)
         rgb_feats = vgg(rgb)

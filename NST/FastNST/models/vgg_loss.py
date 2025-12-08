@@ -23,26 +23,22 @@ LAYER_INDICES = {
 }
 
 LAYER_CONFIGS = {
-    'gatys': {
+    'origami_best': {
         'content': ['conv4_2'],
         'style': [
-            'conv1_1',
             'conv2_1',
             'conv3_1',
-            'conv4_1',
-            'conv5_1'
+            'conv4_1'
         ],
         'style_weights': {
-            'conv1_1': 1.0,
-            'conv2_1': 0.8,
-            'conv3_1': 0.5,
-            'conv4_1': 0.3,
-            'conv5_1': 0.1
+            'conv2_1': 1.5,
+            'conv3_1': 1.5,
+            'conv4_1': 1.0
         },
     }
 }
 
-ACTIVE_LAYER_CONFIG = 'gatys'
+ACTIVE_LAYER_CONFIG = 'origami_best'
 
 
 class VGGFeatures(nn.Module):
@@ -80,3 +76,5 @@ def load_vgg(device):
     layer_cfg = LAYER_CONFIGS[ACTIVE_LAYER_CONFIG]
 
     return vgg_feats, layer_cfg
+
+

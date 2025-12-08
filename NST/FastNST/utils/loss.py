@@ -8,14 +8,18 @@ def content_loss(gen_feats, content_feats, layer_cfg, weight=1.0):
 
 def style_loss(gen_feats, style_grams, layer_cfg):
     loss = 0.0
-    for layer in layer_cfg["style"]:
-        gen_gram = gram_matrix(gen_feats[layer])
+
+    style_layers = layer_cfg["style"]
+    style_weights = layer_cfg["style_weights"]
+
+    for layer in style_layers:
+        w = style_weights[layer]
+        gen_gram = gram_matrix(gen_feats[layer])   # (B, C, C)
         target_gram = style_grams[layer]
-        w = layer_cfg["style_weights"][layer]
         if target_gram.shape[0] == 1 and gen_gram.shape[0] > 1:
             target_gram = target_gram.expand_as(gen_gram)
-
         loss += w * F.mse_loss(gen_gram, target_gram)
+
     return loss
 
 def total_variation_loss(img, weight=1e-6):
