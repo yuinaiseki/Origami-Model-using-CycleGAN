@@ -1,0 +1,9 @@
+{
+  "lambda_cyc": 10.0,
+  "lambda_id": 5.0,
+  "img_size": 256,
+  "batch_size": 4,
+  "num_epochs": 100,
+  "G_lr": 0.0002,
+  "n_blocks": 9
+}
