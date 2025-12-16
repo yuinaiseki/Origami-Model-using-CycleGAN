@@ -1,5 +1,9 @@
 # Origami Model Generation with Neural Style Transfer (NST) and Cycle-Consistent Generative Adversarial Networks (CycleGAN)
 
+## Paper & Poster
+The final project paper can be found at: https://github.com/yuinaiseki/Origami-Model-using-CycleGAN/blob/main/paper.pdf
+And the poster at: https://github.com/yuinaiseki/Origami-Model-using-CycleGAN/blob/main/poster.pdf
+
 The structure of the repository is the following:
 ```
 CycleGAN/
