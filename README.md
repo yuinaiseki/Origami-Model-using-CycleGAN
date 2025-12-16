@@ -2,6 +2,7 @@
 
 ## Paper & Poster
 The final project paper can be found at: https://github.com/yuinaiseki/Origami-Model-using-CycleGAN/blob/main/paper.pdf
+
 And the poster at: https://github.com/yuinaiseki/Origami-Model-using-CycleGAN/blob/main/poster.pdf
 
 The structure of the repository is the following:
